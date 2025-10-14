@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,6 +17,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:bcrypt/bcrypt.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:http/http.dart' as http;
 
 class Registerusers extends StatefulWidget {
   const Registerusers({super.key});
@@ -30,7 +32,7 @@ class _RegisterusersState extends State<Registerusers> {
   StreamSubscription? listener;
 
   final ImagePicker picker = ImagePicker();
-  XFile? image;
+  File? image;
 
   XFile? selectedImage;
   String? imageUrl;
@@ -151,40 +153,6 @@ class _RegisterusersState extends State<Registerusers> {
                                       242,
                                     ),
                                     hintText: 'ชื่อ - สกุล',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide:
-                                          BorderSide.none, // ถ้าไม่อยากให้ขอบ
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  "อีเมล",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 20),
-                                child: TextField(
-                                  controller: emailCtl,
-                                  decoration: InputDecoration(
-                                    filled:
-                                        true, // ต้องตั้งเป็น true ถึงจะมีพื้นหลัง
-                                    fillColor: Color.fromARGB(
-                                      255,
-                                      244,
-                                      242,
-                                      242,
-                                    ),
-                                    hintText: 'อีเมล',
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide:
@@ -451,27 +419,21 @@ class _RegisterusersState extends State<Registerusers> {
 
   Future<void> addData() async {
     try {
+      var docRef = db.collection('users').doc();
+      var docAddress = db.collection('address').doc();
       final hashedPassword = BCrypt.hashpw(passwordCtl.text, BCrypt.gensalt());
 
-      final auth = FirebaseAuth.instance;
-      UserCredential userCred = await auth.createUserWithEmailAndPassword(
-        email: emailCtl.text,
-        password: passwordCtl.text,
-      );
-
-      final userId = userCred.user!.uid;
-
+      final userId = docRef.id;
       String? imageUrl;
 
       // ถ้ามีภาพจาก addImg() → อัปโหลดก่อน
       if (image != null) {
-        imageUrl = await uploadImage(image!, userId);
+        imageUrl = await uploadToCloudinary(image!);
         log("imageUrl : $imageUrl");
       } else {
         log("No image");
       }
 
-      var docRef = db.collection('users').doc(userId);
       var data = {
         'name': nameCtl.text,
         'phone': phoneCtl.text,
@@ -480,14 +442,14 @@ class _RegisterusersState extends State<Registerusers> {
         'createdAt': DateTime.now(),
       };
 
-      var docAddress = db.collection('address').doc();
       var addressData = {
-        'user_id': userId,
+        'user_id': docRef.id,
         'address': selectedAddress,
         'latitude': selectedLatLng!.latitude,
         'longitude': selectedLatLng!.longitude,
       };
 
+      print("Data to upload: $data");
       await docRef.set(data);
       await docAddress.set(addressData);
       print("${docRef.id} ลงทะเบียนสำเร็จ");
@@ -502,29 +464,37 @@ class _RegisterusersState extends State<Registerusers> {
   }
 
   void addImg() async {
-    image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      log(image?.path.toString() ?? 'No Image');
-      setState(() {});
-    } else {
-      log('No Image');
-    }
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+
+    image = File(picked.path);
+    setState(() {});
   }
 
-  Future<String?> uploadImage(XFile imageFile, String userId) async {
+  Future<String?> uploadToCloudinary(File imageFile) async {
     try {
-      // สร้าง reference ไปที่ storage
-      final storageRef = FirebaseStorage.instance.ref();
-      final imgRef = storageRef.child('profile_images/$userId.jpg');
+      const cloudName = "dsz1hhnx4"; // Cloud name ของคุณ
+      const uploadPreset = "flutter_upload"; // ชื่อ preset ที่ตั้งใน Cloudinary
 
-      // อัปโหลดไฟล์
-      await imgRef.putFile(File(imageFile.path));
+      final url = Uri.parse(
+        "https://api.cloudinary.com/v1_1/$cloudName/image/upload",
+      );
 
-      // ดึง URL ของรูปที่อัปโหลด
-      final downloadURL = await imgRef.getDownloadURL();
-      return downloadURL;
+      var request = http.MultipartRequest("POST", url)
+        ..fields['upload_preset'] = uploadPreset
+        ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        var responseData = await response.stream.bytesToString();
+        var jsonData = jsonDecode(responseData);
+        return jsonData['secure_url']; // ✅ ได้ URL กลับมา
+      } else {
+        print("Upload failed with status: ${response.statusCode}");
+        return null;
+      }
     } catch (e) {
-      print("เกิดข้อผิดพลาดขณะอัปโหลดรูป: $e");
+      print("Upload error: $e");
       return null;
     }
   }
