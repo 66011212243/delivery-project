@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
-
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:bcrypt/bcrypt.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delivery/page/login.dart';
@@ -23,8 +24,8 @@ class _RegisterridersState extends State<Registerriders> {
   var passwordCtl = TextEditingController();
   var vehicleNumberCtl = TextEditingController();
 
-  var image;
-  var image_vehicle;
+  File? image;
+  File? imageVehicle ;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -101,31 +102,6 @@ class _RegisterridersState extends State<Registerriders> {
                         ),
                       ),
 
-                      // email
-                      // Padding(
-                      //   padding: const EdgeInsets.all(8.0),
-                      //   child: Text(
-                      //     "อีเมล",
-                      //     style: TextStyle(
-                      //       fontSize: 16,
-                      //       fontWeight: FontWeight.bold,
-                      //     ),
-                      //   ),
-                      // ),
-                      // Padding(
-                      //   padding: const EdgeInsets.only(bottom: 20),
-                      //   child: TextField(
-                      //     decoration: InputDecoration(
-                      //       filled: true, // ต้องตั้งเป็น true ถึงจะมีพื้นหลัง
-                      //       fillColor: Color.fromARGB(255, 244, 242, 242),
-                      //       hintText: 'อีเมล',
-                      //       border: OutlineInputBorder(
-                      //         borderRadius: BorderRadius.circular(12),
-                      //         borderSide: BorderSide.none, // ถ้าไม่อยากให้ขอบ
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
 
                       //phone
                       Padding(
@@ -227,9 +203,9 @@ class _RegisterridersState extends State<Registerriders> {
                           color: Color.fromARGB(255, 241, 241, 241),
                         ),
                         child: Card(
-                          child: (image_vehicle != null)
+                          child: (imageVehicle  != null)
                               ? Image.file(
-                                  File(image_vehicle!.path),
+                                  File(imageVehicle !.path),
                                   width: 150,
                                   height: 150,
                                   fit: BoxFit.cover,
@@ -279,25 +255,43 @@ class _RegisterridersState extends State<Registerriders> {
   }
 
   void addImgProfile() async {
-    image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      log(image.path.toString());
-      setState(() {});
-    } else {
-      log('No Image');
-    }
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+
+    image = File(picked.path);
+    setState(() {});
   }
 
   void addData() async {
     try {
       var docRef = db.collection('riders').doc();
       final hashedPassword = BCrypt.hashpw(passwordCtl.text, BCrypt.gensalt());
+      String? imageUrl;
+      String? imageUrlVehicle;
+
+      // ถ้ามีภาพจาก addImg() → อัปโหลดก่อน
+      if (image != null) {
+        imageUrl = await uploadToCloudinary(image!);
+        log("imageUrl : $imageUrl");
+      } else {
+        log("No image");
+      }
+
+      if (imageVehicle  != null) {
+        imageUrlVehicle = await uploadToCloudinary(imageVehicle !);
+        log("imageUrl : $imageUrlVehicle");
+      } else {
+        log("No image");
+      }
+
       var data = {
         'name': nameCtl.text,
         'phone': phoneCtl.text,
         'password': hashedPassword,
         'createdAt': DateTime.now(),
         'vehicle_number': vehicleNumberCtl.text,
+        if (imageUrl != null) 'profile_image': imageUrl,
+        if (imageUrlVehicle != null) 'vehicle_image': imageUrlVehicle,
       };
 
       await docRef.set(data);
@@ -312,12 +306,38 @@ class _RegisterridersState extends State<Registerriders> {
   }
 
   void addImgVehicle() async {
-    image_vehicle = await picker.pickImage(source: ImageSource.gallery);
-    if (image_vehicle != null) {
-      log(image_vehicle.path.toString());
-      setState(() {});
-    } else {
-      log('No Image');
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+
+    imageVehicle  = File(picked.path);
+    setState(() {});
+  }
+
+  Future<String?> uploadToCloudinary(File imageFile) async {
+    try {
+      const cloudName = "dsz1hhnx4"; // Cloud name ของคุณ
+      const uploadPreset = "flutter_upload"; // ชื่อ preset ที่ตั้งใน Cloudinary
+
+      final url = Uri.parse(
+        "https://api.cloudinary.com/v1_1/$cloudName/image/upload",
+      );
+
+      var request = http.MultipartRequest("POST", url)
+        ..fields['upload_preset'] = uploadPreset
+        ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        var responseData = await response.stream.bytesToString();
+        var jsonData = jsonDecode(responseData);
+        return jsonData['secure_url']; // ✅ ได้ URL กลับมา
+      } else {
+        print("Upload failed with status: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("Upload error: $e");
+      return null;
     }
   }
 }
