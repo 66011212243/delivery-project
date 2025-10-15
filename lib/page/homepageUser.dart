@@ -1,4 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'dart:developer';
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 class HomePageUser extends StatefulWidget {
   const HomePageUser({super.key});
@@ -116,17 +123,31 @@ class _HomePageUserState extends State<HomePageUser> {
 }
 
 /// ------------------ หน้า ส่งสินค้า ------------------
-class CreateOrderPage extends StatelessWidget {
+
+class CreateOrderPage extends StatefulWidget {
   const CreateOrderPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final nameController = TextEditingController();
-    final qtyController = TextEditingController();
-    final detailController = TextEditingController();
-    final receiverController = TextEditingController();
-    final addressController = TextEditingController();
+  State<CreateOrderPage> createState() => _CreateOrderPageState();
+}
 
+class _CreateOrderPageState extends State<CreateOrderPage> {
+  var db = FirebaseFirestore.instance;
+  final nameController = TextEditingController();
+  final qtyController = TextEditingController();
+  final detailController = TextEditingController();
+  final receiverController = TextEditingController();
+  final addressController = TextEditingController();
+
+  final ImagePicker picker = ImagePicker();
+  File? image;
+
+  String? selectedAddress;
+  List<Map<String, dynamic>> addresses = [];
+
+  Map<String, dynamic>? userData;
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFFFDE10A),
@@ -145,14 +166,19 @@ class CreateOrderPage extends StatelessWidget {
             // รูป
             Container(
               width: double.infinity,
-              height: 150,
+              height: 200,
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.orange),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Center(
-                child: Icon(Icons.add, size: 40, color: Colors.grey),
-              ),
+              child: (image != null)
+                  ? Image.file(File(image!.path), fit: BoxFit.cover)
+                  : Center(
+                      child: GestureDetector(
+                        onTap: addImg,
+                        child: Icon(Icons.add, size: 40, color: Colors.grey),
+                      ),
+                    ),
             ),
             const SizedBox(height: 8),
             Center(
@@ -161,9 +187,7 @@ class CreateOrderPage extends StatelessWidget {
                   backgroundColor: Colors.orange,
                   foregroundColor: Colors.black,
                 ),
-                onPressed: () {
-                  // ถ่ายรูปสินค้า
-                },
+                onPressed: addImgByCamera,
                 icon: const Icon(Icons.camera_alt),
                 label: const Text("ถ่ายรูปสินค้า"),
               ),
@@ -176,37 +200,12 @@ class CreateOrderPage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // Product Name
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                hintText: "ชื่อสินค้า",
-                filled: true,
-                fillColor: Color(0xFFF5F5F5),
-                border: OutlineInputBorder(borderSide: BorderSide.none),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Quantity
-            TextField(
-              controller: qtyController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                hintText: "จำนวน",
-                filled: true,
-                fillColor: Color(0xFFF5F5F5),
-                border: OutlineInputBorder(borderSide: BorderSide.none),
-              ),
-            ),
-            const SizedBox(height: 12),
-
             // Details
             TextField(
               controller: detailController,
-              maxLines: 3,
+              maxLines: 5,
               decoration: const InputDecoration(
-                hintText: "รายละเอียดเพิ่มเติม (ไม่บังคับ)",
+                hintText: "รายละเอียดสินค้า...",
                 filled: true,
                 fillColor: Color(0xFFF5F5F5),
                 border: OutlineInputBorder(borderSide: BorderSide.none),
@@ -235,42 +234,96 @@ class CreateOrderPage extends StatelessWidget {
                     backgroundColor: Colors.orange,
                     foregroundColor: Colors.black,
                   ),
-                  onPressed: () {
-                    // TODO: ค้นหา
-                  },
+                  onPressed: queryData,
                   child: const Text("ค้นหา"),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 25),
 
-            // Address
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: addressController,
-                    decoration: const InputDecoration(
-                      hintText: "เลือกที่อยู่ผู้รับ",
-                      filled: true,
-                      fillColor: Color(0xFFF5F5F5),
-                      border: OutlineInputBorder(borderSide: BorderSide.none),
+            if (userData != null)
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      height: 100,
+                      color: Color.fromARGB(255, 239, 239, 239),
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 25),
+                            child: Container(
+                              width: 70,
+                              height: 70,
+                              child: Image.network(
+                                userData?['profile_image'],
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+
+                          Padding(
+                            padding: const EdgeInsets.only(left: 40, top: 25),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  userData?['name'],
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  userData?['phone'],
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.black,
+                ],
+              ),
+            const SizedBox(height: 25),
+
+            // Address
+            if (userData != null && addresses.isNotEmpty)
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownMenu<String>(
+                      width: double.infinity,
+                      hintText: "เลือกที่อยู่ผู้รับ",
+                      inputDecorationTheme: const InputDecorationTheme(
+                        filled: true,
+                        fillColor: Color(0xFFF5F5F5),
+                        border: OutlineInputBorder(borderSide: BorderSide.none),
+                      ),
+                      dropdownMenuEntries: addresses.map((addressData) {
+                        String id = addressData['id'] ?? '';
+                        String address = addressData['address'] ?? '';
+                        return DropdownMenuEntry<String>(
+                          value: id,
+                          label: address,
+                        );
+                      }).toList(),
+                      onSelected: (value) {
+                        setState(() {
+                          selectedAddress = value;
+                          log(selectedAddress.toString());
+                        });
+                      },
+                    ),
                   ),
-                  onPressed: () {
-                    // TODO: เลือกที่อยู่
-                  },
-                  child: const Text("เลือก"),
-                ),
-              ],
-            ),
+                ],
+              ),
             const SizedBox(height: 24),
 
             // Submit Button
@@ -297,5 +350,88 @@ class CreateOrderPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void addImg() async {
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+
+    image = File(picked.path);
+    setState(() {});
+  }
+
+  void addImgByCamera() async {
+    final picked = await picker.pickImage(source: ImageSource.camera);
+    if (picked == null) return;
+    image = File(picked.path);
+    setState(() {});
+  }
+
+  Future<String?> uploadToCloudinary(File imageFile) async {
+    try {
+      const cloudName = "dsz1hhnx4"; // Cloud name ของคุณ
+      const uploadPreset = "flutter_upload"; // ชื่อ preset ที่ตั้งใน Cloudinary
+
+      final url = Uri.parse(
+        "https://api.cloudinary.com/v1_1/$cloudName/image/upload",
+      );
+
+      var request = http.MultipartRequest("POST", url)
+        ..fields['upload_preset'] = uploadPreset
+        ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        var responseData = await response.stream.bytesToString();
+        var jsonData = jsonDecode(responseData);
+        return jsonData['secure_url']; // ✅ ได้ URL กลับมา
+      } else {
+        print("Upload failed with status: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("Upload error: $e");
+      return null;
+    }
+  }
+
+  Future<void> queryData() async {
+    //ค้นหาผู้ใช้
+    var userRef = db.collection('users');
+    var query = userRef.where("phone", isEqualTo: receiverController.text);
+    var result = await query.get();
+
+    if (result.docs.isNotEmpty) {
+      var userDoc = result.docs.first;
+      var user = userDoc.data();
+      log(user.toString());
+      //  ถ้าพบผู้ใช้ → ดึงที่อยู่จาก collection addresses
+      var addressRef = db.collection('address');
+      log(userDoc.id);
+      var addressQuery = addressRef.where("user_id", isEqualTo: userDoc.id);
+      var addressResult = await addressQuery.get();
+
+      addresses = addressResult.docs.map((doc) {
+        var data = doc.data(); // ดึง Map<String, dynamic> ของแต่ละเอกสาร
+        data['id'] = doc.id; // เพิ่ม field 'id' เป็น doc.id ของ Firestore
+        return data; // คืน Map ที่มีทั้งข้อมูล + id
+      }).toList();
+      log(addresses.toString());
+
+      // 3️⃣ อัปเดต state รวมผู้ใช้ + ที่อยู่
+      setState(() {
+        userData = {
+          ...user, // ข้อมูลผู้ใช้
+          'address': addresses, // ใส่ list ของที่อยู่
+        };
+      });
+    } else {
+      setState(() {
+        userData = null;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("ไม่พบผู้ใช้ที่มีเบอร์นี้")));
+    }
   }
 }
