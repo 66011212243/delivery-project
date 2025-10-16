@@ -475,9 +475,9 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
       int status = 0;
       String? addressSender;
       if (resultAddress.docs.isNotEmpty) {
-        var userDoc = resultAddress.docs.first;
-        addressSender = userDoc.id;
-        log(userDoc.id);
+        var addressDoc = resultAddress.docs.first;
+        addressSender = addressDoc.id;
+        log(addressDoc.id);
       }
 
       log(widget.uid);
@@ -505,7 +505,7 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
 
       log(data.toString());
       await docOrder.set(data);
-      log("${docOrder.id} ลงทะเบียนสำเร็จ");
+      log("${docOrder.id} สร้างสำเร็จ");
 
       Navigator.pushReplacement(
         context,

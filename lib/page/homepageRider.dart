@@ -1,6 +1,11 @@
-
+import 'dart:async';
+import 'dart:developer';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delivery/page/profileRider.dart';
+import 'package:delivery/page/riderSendOrder.dart';
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:geocoding/geocoding.dart';
 
 class Homepagerider extends StatefulWidget {
   String rid = '';
@@ -11,6 +16,16 @@ class Homepagerider extends StatefulWidget {
 }
 
 class _HomepageriderState extends State<Homepagerider> {
+  var db = FirebaseFirestore.instance;
+  StreamSubscription? listener;
+  List<Map<String, dynamic>> orders = [];
+  bool isLoading = true;
+  @override
+  void initState() {
+    super.initState();
+    startRealtime();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,214 +51,257 @@ class _HomepageriderState extends State<Homepagerider> {
 
       body: Container(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      child: Padding(
-                        padding: const EdgeInsets.all(25.0),
-                        child: FilledButton(
-                          onPressed: () {},
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 253, 225, 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                10,
-                              ), // มุมโค้ง
-                            ),
-                          ),
-                          child: Text(
-                            "ประกาศจ้าง",
-                            style: TextStyle(color: Colors.black),
-                          ),
-                        ),
-                      ),
+            Container(
+              child: Padding(
+                padding: const EdgeInsets.all(25.0),
+                child: FilledButton(
+                  onPressed: () {},
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Color.fromARGB(255, 253, 225, 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10), // มุมโค้ง
                     ),
-
-                    Center(
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 20, bottom: 25),
-                            child: Container(
-                              width: 320,
-                              height: 270,
-                              decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 255, 255, 255),
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(16),
-                                ),
-                                border: Border.all(
-                                  color: Color.fromARGB(255, 110, 109, 109),
-                                ),
-                              ),
-
-                              child: Padding(
-                                padding: const EdgeInsets.all(20.0),
+                  ),
+                  child: Text(
+                    "ประกาศจ้าง",
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator()) // Loader ขณะโหลด
+                  : ListView.builder(
+                      itemCount: orders.length,
+                      itemBuilder: (context, index) {
+                        final order = orders[index];
+                        return SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Center(
                                 child: Column(
                                   children: [
                                     Padding(
                                       padding: const EdgeInsets.only(
-                                        bottom: 12,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            width: 50,
-                                            height: 50,
-                                            decoration: BoxDecoration(
-                                              color: const Color.fromARGB(
-                                                255,
-                                                180,
-                                                179,
-                                                179,
-                                              ),
-                                              shape: BoxShape.circle,
-                                            ),
-                                          ),
-
-                                          Container(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                        left: 20,
-                                                      ),
-                                                  child: Text(
-                                                    "พิชชาภรณ์ ยานรัมย์",
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                        left: 20,
-                                                      ),
-                                                  child: Text(
-                                                    "098777777",
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
-                                    Row(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            right: 30,
-                                          ),
-                                          child: Container(
-                                            child: Image.asset(
-                                              'assets/images/box.png',
-                                              width: 40,
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          child: Text(
-                                            "Big-C Onnut",
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        right: 230,
-                                        bottom: 10,
+                                        top: 20,
+                                        bottom: 25,
                                       ),
                                       child: Container(
-                                        width: 2, // ความกว้างเต็ม parent
-                                        height: 30, // ความหนา
-                                        color: Colors.black,
-                                      ),
-                                    ),
-
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 10,
-                                        bottom: 15,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              right: 30,
-                                            ),
-                                            child: Container(
-                                              child: Image.asset(
-                                                'assets/images/pin_images.png',
-                                                width: 30,
-                                              ),
-                                            ),
-                                          ),
-                                          Container(
-                                            child: Text(
-                                              "มหาวิทยาลัยมหาสารคาม",
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
-                                    Center(
-                                      child: FilledButton(
-                                        onPressed: () {},
-                                        style: FilledButton.styleFrom(
-                                          backgroundColor: Color.fromARGB(
+                                        width: 320,
+                                        height: 270,
+                                        decoration: BoxDecoration(
+                                          color: const Color.fromARGB(
                                             255,
                                             255,
-                                            187,
-                                            2,
+                                            255,
+                                            255,
                                           ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ), // มุมโค้ง
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(16),
+                                          ),
+                                          border: Border.all(
+                                            color: Color.fromARGB(
+                                              255,
+                                              110,
+                                              109,
+                                              109,
+                                            ),
                                           ),
                                         ),
-                                        child: Text(
-                                          "รับงาน",
-                                          style: TextStyle(color: Colors.black),
+
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(20.0),
+                                          child: Column(
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  bottom: 12,
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Container(
+                                                      width: 50,
+                                                      height: 50,
+                                                      child: Image.network(
+                                                        order['senderImage'],
+                                                      ),
+                                                      decoration: BoxDecoration(
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                    ),
+
+                                                    Container(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets.only(
+                                                                  left: 20,
+                                                                ),
+                                                            child: Text(
+                                                              order['senderName'],
+                                                              style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets.only(
+                                                                  left: 20,
+                                                                ),
+                                                            child: Text(
+                                                              order['senderPhone'],
+                                                              style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+
+                                              Row(
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          right: 30,
+                                                        ),
+                                                    child: Container(
+                                                      child: Image.asset(
+                                                        'assets/images/box.png',
+                                                        width: 40,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    child: Text(
+                                                      order['sender_address'],
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  right: 230,
+                                                  bottom: 10,
+                                                ),
+                                                child: Container(
+                                                  width:
+                                                      2, // ความกว้างเต็ม parent
+                                                  height: 30, // ความหนา
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  left: 10,
+                                                  bottom: 15,
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            right: 30,
+                                                          ),
+                                                      child: Container(
+                                                        child: Image.asset(
+                                                          'assets/images/pin_images.png',
+                                                          width: 30,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Container(
+                                                      child: Text(
+                                                        order['receiver_address'],
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+
+                                              Center(
+                                                child: FilledButton(
+                                                  onPressed: () async {
+                                                    await acceptOrder(
+                                                      order['order_id'],
+                                                      widget.rid,
+                                                    );
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Ridersendorder(
+                                                              order_id:
+                                                                  order['order_id'],
+                                                            ),
+                                                      ),
+                                                    );
+                                                  },
+                                                  style: FilledButton.styleFrom(
+                                                    backgroundColor:
+                                                        Color.fromARGB(
+                                                          255,
+                                                          255,
+                                                          187,
+                                                          2,
+                                                        ),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            10,
+                                                          ), // มุมโค้ง
+                                                    ),
+                                                  ),
+                                                  child: Text(
+                                                    "รับงาน",
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  ],
-                ),
-              ),
             ),
 
             Container(
@@ -311,7 +369,128 @@ class _HomepageriderState extends State<Homepagerider> {
   void gotoProfile() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const Profilerider()),
+      MaterialPageRoute(builder: (context) => Profilerider(rid: widget.rid)),
     );
+  }
+
+  void startRealtime() async {
+    setState(() {
+      isLoading = true; // เริ่มโหลด
+    });
+    final docOrder = db.collection("orders").where("status", isEqualTo: 0);
+    var userDoc = db.collection('users');
+    var addressDoc = db.collection('address');
+    if (listener != null) {
+      await listener!.cancel();
+      listener = null;
+    }
+
+    listener = docOrder.snapshots().listen(
+      (querySnapshot) async {
+        List<Map<String, dynamic>> tempList = [];
+        for (var doc in querySnapshot.docs) {
+          var data = doc.data();
+          var senderId = data['sender_id'];
+          var receiverId = data['receiver_id'];
+          var senderAddress = data['sender_address_id'];
+          var receiverAddress = data['receiver_address_id'];
+
+          var userQuerySender = await userDoc.doc(senderId).get();
+          var userQueryReceiver = await userDoc.doc(receiverId).get();
+          var addressSender = await addressDoc.doc(senderAddress).get();
+          var addressReceiver = await addressDoc.doc(receiverAddress).get();
+
+          var senderData = userQuerySender.data();
+          var receiverData = userQueryReceiver.data();
+          var senderAddressData = addressSender.data();
+          var receiverAddressData = addressReceiver.data();
+
+          var senderAddressString = await getAddressFromLatLng(
+            senderAddressData!['latitude'],
+            senderAddressData!['longitude'],
+          );
+
+          var receiverAddressString = await getAddressFromLatLng(
+            receiverAddressData!['latitude'],
+            receiverAddressData!['longitude'],
+          );
+
+          var fullData = {
+            "order_id": doc.id,
+            "senderName": senderData!['name'],
+            "senderPhone": senderData!['phone'],
+            "senderImage": senderData!['profile_image'],
+            "sender_address": senderAddressString,
+            "receiver_address": receiverAddressString,
+          };
+
+          tempList.add(fullData);
+        }
+        setState(() {
+          orders = tempList;
+          isLoading = false; // โหลดเสร็จแล้ว
+        });
+
+        log("UPDATED ORDERS => $orders");
+      },
+      onError: (error) {
+        log("Listen failed: $error");
+      },
+    );
+  }
+
+  Future<String?> getAddressFromLatLng(
+    double latitude,
+    double longitude,
+  ) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        latitude,
+        longitude,
+      );
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks.first;
+
+        // เอาแค่ชื่อเมือง (locality)
+        return place.locality; // เช่น "Kantharawichai"
+      }
+    } catch (e) {
+      print("Error reverse geocoding: $e");
+    }
+    return null;
+  }
+
+  Future<void> acceptOrder(String orderId, String riderId) async {
+    final docOrder = db.collection("orders").doc(orderId);
+    try {
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        final snapshot = await transaction.get(docOrder);
+        if (!snapshot.exists) {
+          throw Exception("งานนี้ไม่มีอยู่จริง");
+        }
+        final status = snapshot['status'] ?? 0;
+        if (status == 1) {
+          // งานถูกรับไปแล้ว
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: Text("ไม่สามารถรับงานได้"),
+              content: Text("งานนี้มีคนรับไปแล้ว"),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("ตกลง"),
+                ),
+              ],
+            ),
+          );
+        }
+        transaction.update(docOrder, {'status': 1, 'rider_id': riderId});
+      });
+    } catch (err) {
+      log("ไม่สามารถรับงานได้: $err");
+    }
   }
 }

@@ -260,7 +260,8 @@ class _LoginPageState extends State<LoginPage> {
       var riderDoc = resultRider.docs.first; // นี่คือ DocumentSnapshot
       var riderData = riderDoc.data();
       var hashedPasswordRider = riderData['password'];
-      var riderId = dbRider.id;
+      var riderId = riderDoc.id;
+      log("riderId $riderId");
 
       bool riderIsMatch = BCrypt.checkpw(
         passwordController.text,
