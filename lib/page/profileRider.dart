@@ -240,9 +240,9 @@ class _ProfileriderState extends State<Profilerider> {
   }
 
   void gotoHomepage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const Homepagerider()),
-    );
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(builder: (context) => Homepagerider()),
+    // );
   }
 }

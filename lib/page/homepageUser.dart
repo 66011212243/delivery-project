@@ -8,7 +8,8 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 class HomePageUser extends StatefulWidget {
-  const HomePageUser({super.key});
+  String uid = '';
+  HomePageUser({super.key, required this.uid});
 
   @override
   State<HomePageUser> createState() => _HomePageUserState();
@@ -65,7 +66,7 @@ class _HomePageUserState extends State<HomePageUser> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const CreateOrderPage(),
+                      builder: (context) => CreateOrderPage(uid: widget.uid),
                     ),
                   );
                 },
@@ -125,7 +126,8 @@ class _HomePageUserState extends State<HomePageUser> {
 /// ------------------ หน้า ส่งสินค้า ------------------
 
 class CreateOrderPage extends StatefulWidget {
-  const CreateOrderPage({super.key});
+  String uid = '';
+  CreateOrderPage({super.key, required this.uid});
 
   @override
   State<CreateOrderPage> createState() => _CreateOrderPageState();
@@ -338,9 +340,7 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    onPressed: () {
-                      // ส่งสินค้า
-                    },
+                    onPressed: addData,
                     child: const Text("ส่งสินค้า"),
                   ),
                 ),
@@ -404,6 +404,7 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
     if (result.docs.isNotEmpty) {
       var userDoc = result.docs.first;
       var user = userDoc.data();
+      user['id'] = userDoc.id;
       log(user.toString());
       //  ถ้าพบผู้ใช้ → ดึงที่อยู่จาก collection addresses
       var addressRef = db.collection('address');
@@ -432,6 +433,55 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("ไม่พบผู้ใช้ที่มีเบอร์นี้")));
+    }
+  }
+
+  Future<void> addData() async {
+    try {
+      String senderId = widget.uid;
+      var docOrder = db.collection('orders').doc();
+      var addressRef = db.collection('address');
+      var addressQuery = addressRef.where("user_id", isEqualTo: widget.uid);
+      var resultAddress = await addressQuery.get();
+      String? addressSender;
+      if (resultAddress.docs.isNotEmpty) {
+        var userDoc = resultAddress.docs.first;
+        addressSender = userDoc.id;
+        log(userDoc.id);
+      }
+
+      log(widget.uid);
+
+      String? imageUrl;
+
+      // ถ้ามีภาพจาก addImg() → อัปโหลดก่อน
+      if (image != null) {
+        imageUrl = await uploadToCloudinary(image!);
+        log("imageUrl : $imageUrl");
+      } else {
+        log("No image");
+      }
+
+      var data = {
+        'sender_id': widget.uid,
+        'sender_address_id': addressSender,
+        'details': detailController.text,
+        'receiver_id': userData?['id'],
+        'receiver_address_id': selectedAddress,
+        if (imageUrl != null) 'order_image': imageUrl,
+        'createdAt': DateTime.now(),
+      };
+
+      log(data.toString());
+      await docOrder.set(data);
+      log("${docOrder.id} ลงทะเบียนสำเร็จ");
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePageUser(uid: senderId)),
+      );
+    } catch (error) {
+      log(error.toString());
     }
   }
 }

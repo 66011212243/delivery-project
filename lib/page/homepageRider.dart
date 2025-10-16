@@ -2,7 +2,8 @@ import 'package:delivery/page/profileRider.dart';
 import 'package:flutter/material.dart';
 
 class Homepagerider extends StatefulWidget {
-  const Homepagerider({super.key});
+  String rid = '';
+  Homepagerider({super.key, required this.rid});
 
   @override
   State<Homepagerider> createState() => _HomepageriderState();
