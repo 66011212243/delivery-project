@@ -222,8 +222,11 @@ class _LoginPageState extends State<LoginPage> {
     var resultRider = await queryRider.get();
 
     if (result.docs.isNotEmpty) {
-      var userData = result.docs.first.data();
+      var userDoc = result.docs.first; // นี่คือ DocumentSnapshot
+      var userData = userDoc.data();
       var hashedPassword = userData['password'];
+      var userId = userDoc.id;
+      log("user_id $userId");
 
       bool userIsMatch = BCrypt.checkpw(
         passwordController.text,
@@ -233,7 +236,7 @@ class _LoginPageState extends State<LoginPage> {
       if (userIsMatch) {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const HomePageUser()),
+          MaterialPageRoute(builder: (context) => HomePageUser(uid: userId)),
         );
       } else {
         log('รหัสผ่านผิด');
@@ -254,8 +257,10 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } else if (resultRider.docs.isNotEmpty) {
-      var riderData = resultRider.docs.first.data();
+      var riderDoc = resultRider.docs.first; // นี่คือ DocumentSnapshot
+      var riderData = riderDoc.data();
       var hashedPasswordRider = riderData['password'];
+      var riderId = dbRider.id;
 
       bool riderIsMatch = BCrypt.checkpw(
         passwordController.text,
@@ -265,7 +270,7 @@ class _LoginPageState extends State<LoginPage> {
       if (riderIsMatch) {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const Homepagerider()),
+          MaterialPageRoute(builder: (context) => Homepagerider(rid: riderId)),
         );
       } else {
         log('รหัสผ่านผิด');
