@@ -443,6 +443,7 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
       var addressRef = db.collection('address');
       var addressQuery = addressRef.where("user_id", isEqualTo: widget.uid);
       var resultAddress = await addressQuery.get();
+      int status = 0;
       String? addressSender;
       if (resultAddress.docs.isNotEmpty) {
         var userDoc = resultAddress.docs.first;
@@ -469,6 +470,7 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
         'receiver_id': userData?['id'],
         'receiver_address_id': selectedAddress,
         if (imageUrl != null) 'order_image': imageUrl,
+        'status': status,
         'createdAt': DateTime.now(),
       };
 
