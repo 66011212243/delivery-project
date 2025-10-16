@@ -2,7 +2,8 @@ import 'package:delivery/page/homepageRider.dart';
 import 'package:flutter/material.dart';
 
 class Profilerider extends StatefulWidget {
-  const Profilerider({super.key});
+  String rid = '';
+  Profilerider({super.key, required this.rid});
 
   @override
   State<Profilerider> createState() => _ProfileriderState();
@@ -240,9 +241,9 @@ class _ProfileriderState extends State<Profilerider> {
   }
 
   void gotoHomepage() {
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(builder: (context) => Homepagerider()),
-    // );
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => Homepagerider(rid: widget.rid)),
+    );
   }
 }
