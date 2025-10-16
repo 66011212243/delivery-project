@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class Sender_details extends StatelessWidget {
-  const Sender_details({super.key});
+class Product_details extends StatelessWidget {
+  const Product_details({super.key});
 
 
   @override

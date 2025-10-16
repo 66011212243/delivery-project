@@ -1,4 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:delivery/page/HistoryUser.dart';
+import 'package:delivery/page/profileUser.dart';
+import 'package:delivery/page/Product_details.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:developer';
@@ -18,9 +21,17 @@ class HomePageUser extends StatefulWidget {
 class _HomePageUserState extends State<HomePageUser> {
   int _currentIndex = 0;
 
+  final List<Widget> _pages = [
+    Center(child: Text('หน้าหลัก')),
+    Center(child: Text('ประวัติการส่ง')),
+    Center(child: Text('ที่ต้องได้รับ')),
+    Center(child: Text('อื่นๆ')), 
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color(0xFFFDE10A),
@@ -101,10 +112,27 @@ class _HomePageUserState extends State<HomePageUser> {
         currentIndex: _currentIndex,
         selectedItemColor: const Color(0xFFFDE10A),
         unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+         onTap: (index) {
+          if (index == 3) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Profileuser(uid: widget.uid)),
+            );
+          }if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const Product_details()),
+            );
+          }if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const HistoryUser()),
+            );
+            }else {
+            setState(() {
+              _currentIndex = index;
+            });
+          }
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "หน้าหลัก"),
@@ -122,6 +150,7 @@ class _HomePageUserState extends State<HomePageUser> {
     );
   }
 }
+
 
 /// ------------------ หน้า ส่งสินค้า ------------------
 
