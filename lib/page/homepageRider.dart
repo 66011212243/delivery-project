@@ -6,6 +6,7 @@ import 'package:delivery/page/riderSendOrder.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 
 class Homepagerider extends StatefulWidget {
   String rid = '';
@@ -68,6 +69,21 @@ class _HomepageriderState extends State<Homepagerider> {
                     "ประกาศจ้าง",
                     style: TextStyle(color: Colors.black),
                   ),
+                ),
+              ),
+            ),
+            Container(
+              child: Padding(
+                padding: const EdgeInsets.all(25.0),
+                child: FilledButton(
+                  onPressed: getLocation,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Color.fromARGB(255, 253, 225, 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10), // มุมโค้ง
+                    ),
+                  ),
+                  child: Text("แผนที่", style: TextStyle(color: Colors.black)),
                 ),
               ),
             ),
@@ -377,7 +393,7 @@ class _HomepageriderState extends State<Homepagerider> {
     setState(() {
       isLoading = true; // เริ่มโหลด
     });
-    final docOrder = db.collection("orders").where("status", isEqualTo: 0);
+    final docOrder = db.collection("orders").where("status", isEqualTo: 1);
     var userDoc = db.collection('users');
     var addressDoc = db.collection('address');
     if (listener != null) {
@@ -468,8 +484,8 @@ class _HomepageriderState extends State<Homepagerider> {
         if (!snapshot.exists) {
           throw Exception("งานนี้ไม่มีอยู่จริง");
         }
-        final status = snapshot['status'] ?? 0;
-        if (status == 1) {
+        final status = snapshot['status'] ?? 1;
+        if (status == 2) {
           // งานถูกรับไปแล้ว
           showDialog(
             context: context,
@@ -487,10 +503,45 @@ class _HomepageriderState extends State<Homepagerider> {
             ),
           );
         }
-        transaction.update(docOrder, {'status': 1, 'rider_id': riderId});
+        transaction.update(docOrder, {'status': 2, 'rider_id': riderId});
       });
     } catch (err) {
       log("ไม่สามารถรับงานได้: $err");
     }
+  }
+
+  void getLocation() async {
+    try {
+      Position myPosition = await _determinePosition();
+      log('Lat: ${myPosition.latitude}, Lng: ${myPosition.longitude}');
+    } catch (e) {
+      log('Error: $e');
+    }
+  }
+
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+        'Location permissions are permanently denied, we cannot request permissions.',
+      );
+    }
+
+    return await Geolocator.getCurrentPosition();
   }
 }
