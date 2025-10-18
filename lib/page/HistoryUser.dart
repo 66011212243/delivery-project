@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class HistoryUser extends StatelessWidget {
-  const HistoryUser({super.key});
+  String uid = '';
+  HistoryUser({super.key, required this.uid});
   @override
   Widget build(BuildContext context) {
     return Scaffold(

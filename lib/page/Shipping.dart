@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class DetailPage extends StatelessWidget {
-  const DetailPage({super.key});
+class Shipping extends StatefulWidget {
+  final String uid;
+  const Shipping({super.key, required this.uid});
+
+  @override
+  State<Shipping> createState() => _ShippingState();
+}
+
+class _ShippingState extends State<Shipping> {
+
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +26,7 @@ class DetailPage extends StatelessWidget {
           itemCount: 4, // เปลี่ยนจำนวนรายการตามต้องการ
           itemBuilder: (context, index) {
             return Container(
-              margin: const EdgeInsets.only(bottom: 24), // เว้นระยะห่างแต่ละกล่อง
+              margin: const EdgeInsets.only(bottom: 24),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade300),
@@ -34,7 +43,10 @@ class DetailPage extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.asset('assets/images/logo.png', width: 60, height: 60),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 25),
+                 child: Image.asset('assets/images/logo_delivery.jpg', width: 60, height: 60),
+                 ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
