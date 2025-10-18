@@ -25,13 +25,12 @@ class _HomePageUserState extends State<HomePageUser> {
     Center(child: Text('หน้าหลัก')),
     Center(child: Text('ประวัติการส่ง')),
     Center(child: Text('ที่ต้องได้รับ')),
-    Center(child: Text('อื่นๆ')), 
+    Center(child: Text('อื่นๆ')),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color(0xFFFDE10A),
@@ -112,23 +111,27 @@ class _HomePageUserState extends State<HomePageUser> {
         currentIndex: _currentIndex,
         selectedItemColor: const Color(0xFFFDE10A),
         unselectedItemColor: Colors.grey,
-         onTap: (index) {
+        onTap: (index) {
           if (index == 3) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => Profileuser(uid: widget.uid)),
+              MaterialPageRoute(
+                builder: (context) => Profileuser(uid: widget.uid),
+              ),
             );
-          }if (index == 2) {
+          }
+          if (index == 2) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const Product_details()),
             );
-          }if (index == 1) {
+          }
+          if (index == 1) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const HistoryUser()),
             );
-            }else {
+          } else {
             setState(() {
               _currentIndex = index;
             });
@@ -150,7 +153,6 @@ class _HomePageUserState extends State<HomePageUser> {
     );
   }
 }
-
 
 /// ------------------ หน้า ส่งสินค้า ------------------
 
@@ -472,7 +474,7 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
       var addressRef = db.collection('address');
       var addressQuery = addressRef.where("user_id", isEqualTo: widget.uid);
       var resultAddress = await addressQuery.get();
-      int status = 0;
+      int status = 1;
       String? addressSender;
       if (resultAddress.docs.isNotEmpty) {
         var addressDoc = resultAddress.docs.first;
