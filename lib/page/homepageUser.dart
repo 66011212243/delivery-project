@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delivery/page/HistoryUser.dart';
 import 'package:delivery/page/profileUser.dart';
 import 'package:delivery/page/Product_details.dart';
+import 'package:delivery/page/Shipping.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:developer';
@@ -98,7 +99,12 @@ class _HomePageUserState extends State<HomePageUser> {
                   ),
                 ),
                 onPressed: () {
-                  // TODO: ไปหน้า "ดูสินค้าที่กำลังส่ง"
+                 Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Shipping(uid: widget.uid),
+                    ),
+                  );
                 },
                 icon: const Icon(Icons.inventory, color: Colors.yellow),
                 label: const Text("ดูสินค้าที่กำลังส่ง"),
@@ -129,7 +135,7 @@ class _HomePageUserState extends State<HomePageUser> {
           if (index == 1) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const HistoryUser()),
+              MaterialPageRoute(builder: (context) =>  HistoryUser(uid: widget.uid,)),
             );
           } else {
             setState(() {

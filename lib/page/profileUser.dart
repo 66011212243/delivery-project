@@ -228,7 +228,7 @@ class _ProfileuserState extends State<Profileuser> {
           if (index == 1) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const HistoryUser()),
+              MaterialPageRoute(builder: (context) =>  HistoryUser(uid: widget.uid)),
             );
           } else {
             setState(() {
