@@ -28,6 +28,7 @@ class _RidersendorderState extends State<Ridersendorder> {
   List<Map<String, dynamic>> orders = [];
   bool isLoading = true;
   Map<String, dynamic>? orderData;
+  Map<String, dynamic>? getLatLng;
 
   final ImagePicker picker = ImagePicker();
   File? image;
@@ -42,6 +43,7 @@ class _RidersendorderState extends State<Ridersendorder> {
   void initState() {
     super.initState();
     startRealtime();
+    // updateLatLng();
   }
 
   int activeStep = 0;
@@ -67,6 +69,26 @@ class _RidersendorderState extends State<Ridersendorder> {
                         'https://tile.thunderforest.com/atlas/{z}/{x}/{y}.png?apikey=1ef19f91909b4ac1ad3dfb1dc523a2c6',
                     userAgentPackageName: 'com.example.delivery',
                   ),
+                  if (getLatLng?['latitudeSender'] != null &&
+                      getLatLng?['longitudeSender'] !=
+                          null) // วางหมุดเฉพาะเมื่อมีค่าพิกัด
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: LatLng(
+                            getLatLng!['latitudeSender']!,
+                            getLatLng!['longitudeSender']!,
+                          ),
+                          width: 40,
+                          height: 40,
+                          child: Icon(
+                            Icons.location_on,
+                            color: Colors.red,
+                            size: 40,
+                          ),
+                        ),
+                      ],
+                    ),
                   Column(
                     children: [
                       Container(
@@ -494,6 +516,13 @@ class _RidersendorderState extends State<Ridersendorder> {
           "receiverImage": receiverData!['profile_image'],
           "receiver_address": receiverAddressString,
         };
+        getLatLng = {
+          "latitudeSender": senderAddressData!['latitude'],
+          "longitudeSender": senderAddressData!['longitude'],
+          "latitudeReceiver": receiverAddressData!['latitude'],
+          "longitudeReceiver": receiverAddressData!['longitude'],
+        };
+
         activeStep = mapStatusToStep(orderData!['status']);
         isLoading = false;
       });
@@ -643,4 +672,53 @@ class _RidersendorderState extends State<Ridersendorder> {
     }
   }
 
+  void getLocation() async {
+    var riderDoc = db.collection('riders').doc(orderData!['rider_id']);
+    if (listener != null) {
+      await listener!.cancel();
+      listener = null;
+    }
+    listener = riderDoc.snapshots().listen((event) {
+      var data = event.data();
+      Get.snackbar(data!.toString(), data!.toString());
+      log("current data: ${event.data()}");
+    }, onError: (error) => log("Listen failed: $error"));
+  }
+
+  void updateLatLng() {
+    Timer.periodic(Duration(seconds: 5), (timer) async {
+      Position position = await _determinePosition();
+      await db.collection('riders').doc(orderData!['rider_id']).update({
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+      });
+      log('Lat: ${position.latitude}, Lng: ${position.longitude}');
+    });
+  }
+
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+        'Location permissions are permanently denied, we cannot request permissions.',
+      );
+    }
+
+    return await Geolocator.getCurrentPosition();
+  }
 }
