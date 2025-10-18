@@ -72,21 +72,7 @@ class _HomepageriderState extends State<Homepagerider> {
                 ),
               ),
             ),
-            Container(
-              child: Padding(
-                padding: const EdgeInsets.all(25.0),
-                child: FilledButton(
-                  onPressed: getLocation,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Color.fromARGB(255, 253, 225, 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10), // มุมโค้ง
-                    ),
-                  ),
-                  child: Text("แผนที่", style: TextStyle(color: Colors.black)),
-                ),
-              ),
-            ),
+
             Expanded(
               child: isLoading
                   ? Center(child: CircularProgressIndicator()) // Loader ขณะโหลด
@@ -479,6 +465,15 @@ class _HomepageriderState extends State<Homepagerider> {
   Future<void> acceptOrder(String orderId, String riderId) async {
     final docOrder = db.collection("orders").doc(orderId);
     try {
+      Position myPosition = await _determinePosition();
+      log('Lat: ${myPosition.latitude}, Lng: ${myPosition.longitude}');
+
+      var riderDoc = db.collection('riders').doc(widget.rid);
+      await riderDoc.update({
+        'latitude': myPosition.latitude,
+        'longitude': myPosition.longitude,
+      });
+
       await FirebaseFirestore.instance.runTransaction((transaction) async {
         final snapshot = await transaction.get(docOrder);
         if (!snapshot.exists) {
@@ -514,6 +509,12 @@ class _HomepageriderState extends State<Homepagerider> {
     try {
       Position myPosition = await _determinePosition();
       log('Lat: ${myPosition.latitude}, Lng: ${myPosition.longitude}');
+
+      var riderDoc = db.collection('riders').doc(widget.rid);
+      await riderDoc.update({
+        'latitude': myPosition.latitude,
+        'longitude': myPosition.longitude,
+      });
     } catch (e) {
       log('Error: $e');
     }
