@@ -1,5 +1,6 @@
 import 'package:delivery/page/homepageRider.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Profilerider extends StatefulWidget {
   String rid = '';
@@ -10,6 +11,52 @@ class Profilerider extends StatefulWidget {
 }
 
 class _ProfileriderState extends State<Profilerider> {
+  String? name;
+  String? phone;
+  String? profileUrl;
+  String? vehicle_image;
+  String? vehicle_number;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchRiderData();
+  }
+
+  Future<void> fetchRiderData() async {
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('riders')
+          .doc(widget.rid)
+          .get();
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        setState(() {
+          name = data['name'] ?? 'ไม่พบชื่อ';
+          phone = data['phone'] ?? '-';
+          profileUrl = data['profile_image'];
+          vehicle_number = data['vehicle_number'] ?? 'ไม่พบรูปภาพ';
+          vehicle_image = data['vehicle_image'];
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+          name = 'ไม่พบผู้ใช้';
+          phone = '-';
+        });
+      }
+    } catch (e) {
+      print('Error fetching rider data: $e');
+      setState(() {
+        isLoading = false;
+        name = 'ข้อผิดพลาดในการโหลดข้อมูล';
+        phone = '-';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,11 +79,18 @@ class _ProfileriderState extends State<Profilerider> {
                     child: Center(
                       child: Column(
                         children: [
-                          Image.asset('assets/images/pfboy.png', width: 180),
+                          CircleAvatar(
+                            radius: 60,
+                            backgroundImage:
+                                profileUrl != null && profileUrl!.isNotEmpty
+                                ? NetworkImage(profileUrl!)
+                                : AssetImage('assets/images/pfboy.png')
+                                      as ImageProvider,
+                          ),
                           Padding(
                             padding: const EdgeInsets.only(top: 10, bottom: 20),
                             child: Text(
-                              "พิชชาภรณ์ ยานรัมย์",
+                              name ?? 'ไม่พบชื่อ',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -52,36 +106,6 @@ class _ProfileriderState extends State<Profilerider> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 30, bottom: 10),
-                          child: Text(
-                            "อีเมล",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: 340,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Color.fromARGB(255, 241, 241, 241),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 20),
-                              child: Text(
-                                "66011212243@gmail.com",
-                                style: TextStyle(fontSize: 18),
-                              ),
-                            ),
-                          ),
-                        ),
-
                         Padding(
                           padding: const EdgeInsets.only(top: 30, bottom: 10),
                           child: Text(
@@ -105,7 +129,7 @@ class _ProfileriderState extends State<Profilerider> {
                             child: Padding(
                               padding: const EdgeInsets.only(left: 20),
                               child: Text(
-                                "0977777777",
+                                phone ?? '-',
                                 style: TextStyle(fontSize: 18),
                               ),
                             ),
@@ -135,7 +159,7 @@ class _ProfileriderState extends State<Profilerider> {
                             child: Padding(
                               padding: const EdgeInsets.only(left: 20),
                               child: Text(
-                                "กข 1234",
+                                vehicle_number ?? 'ไม่พบเลขทะเบียน',
                                 style: TextStyle(fontSize: 18),
                               ),
                             ),
@@ -153,22 +177,24 @@ class _ProfileriderState extends State<Profilerider> {
                           ),
                         ),
                         Container(
-                          width: 340,
-                          height: 50,
+                          width: 150, // ขยายขนาด
+                          height: 150, // ขยายขนาด
                           decoration: BoxDecoration(
                             color: Color.fromARGB(255, 241, 241, 241),
                             borderRadius: BorderRadius.circular(10),
                           ),
-
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 20),
-                              child: Text(
-                                "กข 1234",
-                                style: TextStyle(fontSize: 18),
-                              ),
-                            ),
+                          clipBehavior:
+                              Clip.hardEdge, // ตัดขอบโค้งให้ Container
+                          child: Image(
+                            image:
+                                vehicle_image != null &&
+                                    vehicle_image!.isNotEmpty
+                                ? NetworkImage(vehicle_image!)
+                                : AssetImage('assets/images/pfboy.png'),
+                            width: double.infinity, // ให้เต็ม Container
+                            height: double.infinity, // ให้เต็ม Container
+                            fit: BoxFit.cover, // ครอบเต็มพื้นที่
+                            alignment: Alignment.center, // อยู่ตรงกลาง
                           ),
                         ),
                       ],
