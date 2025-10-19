@@ -29,6 +29,7 @@ class _RidersendorderState extends State<Ridersendorder> {
   bool isLoading = true;
   Map<String, dynamic>? orderData;
   Map<String, dynamic>? getLatLng;
+  Map<String, dynamic>? getLatLngRider;
 
   final ImagePicker picker = ImagePicker();
   File? image;
@@ -69,26 +70,93 @@ class _RidersendorderState extends State<Ridersendorder> {
                         'https://tile.thunderforest.com/atlas/{z}/{x}/{y}.png?apikey=1ef19f91909b4ac1ad3dfb1dc523a2c6',
                     userAgentPackageName: 'com.example.delivery',
                   ),
-                  if (getLatLng?['latitudeSender'] != null &&
-                      getLatLng?['longitudeSender'] !=
+
+                  if (orderData != null && orderData!['status'] == 2)
+                    if (getLatLng?['latitudeSender'] != null &&
+                        getLatLng?['longitudeSender'] !=
+                            null) // วางหมุดเฉพาะเมื่อมีค่าพิกัด
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: LatLng(
+                              getLatLng!['latitudeSender']!,
+                              getLatLng!['longitudeSender']!,
+                            ),
+                            width: 40,
+                            height: 40,
+                            child: Icon(
+                              Icons.location_on,
+                              color: Colors.red,
+                              size: 40,
+                            ),
+                          ),
+                        ],
+                      ),
+                  if (orderData != null && orderData!['status'] == 3)
+                    if (getLatLng?['latitudeReceiver'] != null &&
+                        getLatLng?['longitudeReceiver'] !=
+                            null) // วางหมุดเฉพาะเมื่อมีค่าพิกัด
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: LatLng(
+                              getLatLng!['latitudeReceiver']!,
+                              getLatLng!['longitudeReceiver']!,
+                            ),
+                            width: 40,
+                            height: 40,
+                            child: Icon(
+                              Icons.location_on,
+                              color: Colors.red,
+                              size: 40,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                  if (getLatLngRider != null &&
+                      getLatLng?['latitudeSender'] != null &&
+                      getLatLng?['longitudeSender'] != null)
+                    PolylineLayer(
+                      polylines: [
+                        Polyline(
+                          points: [
+                            LatLng(
+                              getLatLngRider!['latitudeRider'],
+                              getLatLngRider!['longitudeRider'],
+                            ),
+                            LatLng(
+                              getLatLng!['latitudeSender'],
+                              getLatLng!['longitudeSender'],
+                            ),
+                          ],
+                          color: Colors
+                              .blue, // ✅ เปลี่ยนสีได้ เช่น Colors.green, Colors.orange
+                          strokeWidth: 5.0,
+                        ),
+                      ],
+                    ),
+
+                  if (getLatLngRider?['latitudeRider'] != null &&
+                      getLatLngRider?['longitudeRider'] !=
                           null) // วางหมุดเฉพาะเมื่อมีค่าพิกัด
                     MarkerLayer(
                       markers: [
                         Marker(
                           point: LatLng(
-                            getLatLng!['latitudeSender']!,
-                            getLatLng!['longitudeSender']!,
+                            getLatLngRider!['latitudeRider']!,
+                            getLatLngRider!['longitudeRider']!,
                           ),
                           width: 40,
                           height: 40,
-                          child: Icon(
-                            Icons.location_on,
-                            color: Colors.red,
-                            size: 40,
+                          child: Image.asset(
+                            'assets/images/bike.png',
+                            width: 40,
                           ),
                         ),
                       ],
                     ),
+
                   Column(
                     children: [
                       Container(
@@ -149,6 +217,30 @@ class _RidersendorderState extends State<Ridersendorder> {
                     ],
                   ),
 
+                  // Container(
+                  //   alignment: Alignment.center,
+                  //   margin: EdgeInsets.only(bottom: 150),
+                  //   child: Column(
+                  //     mainAxisAlignment: MainAxisAlignment.end,
+
+                  //     children: [
+                  //       const SizedBox(height: 10),
+                  //       ElevatedButton.icon(
+                  //         onPressed: getLocation,
+
+                  //         icon: const Icon(Icons.person_outline),
+                  //         label: const Text('ดู'),
+                  //         style: ElevatedButton.styleFrom(
+                  //           backgroundColor: Colors.yellow[700],
+                  //           foregroundColor: Colors.black,
+                  //           shape: RoundedRectangleBorder(
+                  //             borderRadius: BorderRadius.circular(12),
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
                   Container(
                     alignment: Alignment.center,
                     margin: EdgeInsets.only(bottom: 40),
@@ -524,10 +616,34 @@ class _RidersendorderState extends State<Ridersendorder> {
         };
 
         activeStep = mapStatusToStep(orderData!['status']);
+        if (orderData?['rider_id'] != null) {
+          getLocation();
+        }
         isLoading = false;
       });
 
       log("orderData: ${orderData.toString()}");
+    }, onError: (error) => log("Listen failed: $error"));
+  }
+
+  void getLocation() async {
+    var riderDoc = db.collection('riders').doc(orderData!['rider_id']);
+    if (listener != null) {
+      await listener!.cancel();
+      listener = null;
+    }
+    listener = riderDoc.snapshots().listen((event) {
+      var data = event.data();
+      var latitude = data?['latitude'];
+      var longitude = data?['longitude'];
+      setState(() {
+        getLatLngRider = {
+          'latitudeRider': latitude,
+          'longitudeRider': longitude,
+        };
+      });
+      log(getLatLngRider.toString());
+      log("current data: ${event.data()}");
     }, onError: (error) => log("Listen failed: $error"));
   }
 
@@ -670,19 +786,6 @@ class _RidersendorderState extends State<Ridersendorder> {
       print("Upload error: $e");
       return null;
     }
-  }
-
-  void getLocation() async {
-    var riderDoc = db.collection('riders').doc(orderData!['rider_id']);
-    if (listener != null) {
-      await listener!.cancel();
-      listener = null;
-    }
-    listener = riderDoc.snapshots().listen((event) {
-      var data = event.data();
-      Get.snackbar(data!.toString(), data!.toString());
-      log("current data: ${event.data()}");
-    }, onError: (error) => log("Listen failed: $error"));
   }
 
   void updateLatLng() {
