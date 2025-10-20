@@ -99,7 +99,7 @@ class _HomePageUserState extends State<HomePageUser> {
                   ),
                 ),
                 onPressed: () {
-                 Navigator.push(
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => Shipping(uid: widget.uid),
@@ -135,7 +135,9 @@ class _HomePageUserState extends State<HomePageUser> {
           if (index == 1) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) =>  HistoryUser(uid: widget.uid,)),
+              MaterialPageRoute(
+                builder: (context) => HistoryUser(uid: widget.uid),
+              ),
             );
           } else {
             setState(() {
@@ -295,10 +297,25 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
                             child: Container(
                               width: 70,
                               height: 70,
-                              child: Image.network(
-                                userData?['profile_image'],
-                                fit: BoxFit.cover,
+                              decoration: BoxDecoration(
+                                color: userData?['profile_image'] == null
+                                    ? Colors.grey
+                                    : null, // สีพื้นหลังถ้าไม่มีรูป
+                                borderRadius: BorderRadius.circular(8),
                               ),
+                              child: userData?['profile_image'] != null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        userData!['profile_image'],
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                      size: 40,
+                                    ),
                             ),
                           ),
 
@@ -480,7 +497,7 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
       var addressRef = db.collection('address');
       var addressQuery = addressRef.where("user_id", isEqualTo: widget.uid);
       var resultAddress = await addressQuery.get();
-      int status = 1;
+      int status = 0;
       String? addressSender;
       if (resultAddress.docs.isNotEmpty) {
         var addressDoc = resultAddress.docs.first;

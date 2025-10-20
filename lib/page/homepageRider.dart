@@ -22,7 +22,7 @@ class _HomepageriderState extends State<Homepagerider> {
   List<Map<String, dynamic>> orders = [];
   bool isLoading = true;
   @override
-   void initState() {
+  void initState() {
     super.initState();
     startRealtime();
   }
@@ -128,14 +128,30 @@ class _HomepageriderState extends State<Homepagerider> {
                                                     Container(
                                                       width: 50,
                                                       height: 50,
-                                                      child: Image.network(
-                                                        order['senderImage'],
-                                                      ),
                                                       decoration: BoxDecoration(
                                                         shape: BoxShape.circle,
+                                                        color:
+                                                            order['senderImage'] ==
+                                                                    null ||
+                                                                order['senderImage']
+                                                                    .isEmpty
+                                                            ? Colors.grey[400]
+                                                            : null,
+                                                        image:
+                                                            order['senderImage'] !=
+                                                                    null &&
+                                                                order['senderImage']
+                                                                    .isNotEmpty
+                                                            ? DecorationImage(
+                                                                image: NetworkImage(
+                                                                  order['senderImage'],
+                                                                ),
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                              )
+                                                            : null,
                                                       ),
                                                     ),
-
                                                     Container(
                                                       child: Column(
                                                         crossAxisAlignment:

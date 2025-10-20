@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geocoding/geocoding.dart';
 
 class Shipping extends StatefulWidget {
   final String uid;
@@ -11,6 +12,10 @@ class Shipping extends StatefulWidget {
   State<Shipping> createState() => _ShippingState();
 }
 class _ShippingState extends State<Shipping> {
+  var db = FirebaseFirestore.instance;
+  StreamSubscription? listenerShipping;
+  List<Map<String, dynamic>> orders = [];
+  bool isLoading = true;
 
 String name = '';
 String phone = '';
@@ -104,97 +109,216 @@ String riderUsers = '';
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: ListView.builder(
-          itemCount: 4, // เปลี่ยนจำนวนรายการตามต้องการ
-          itemBuilder: (context, index) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 24),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 25),
-                 child: Image.asset('assets/images/logo_delivery.jpg', width: 60, height: 60),
-                 ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: const [
-                            Icon(Icons.location_on, color: Colors.red, size: 20),
-                            SizedBox(width: 4),
-                            Text(
-                              'มหาวิทยาลัยมหาสารคาม',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.only(left: 20),
-                          child: Text('ชื่อผู้รับ : Manlika'),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: const [
-                            Icon(Icons.location_on, color: Colors.green, size: 20),
-                            SizedBox(width: 4),
-                            Text(
-                              'Big-C Onnut',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.only(left: 20),
-                          child: Text('ชื่อผู้ส่ง : Mullika'),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange,
-                                foregroundColor: Colors.black,
-                              ),
-                              child: const Text("รายละเอียด"),
-                            ),
-                            const SizedBox(width: 16),
-                            ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange,
-                                foregroundColor: Colors.black,
-                              ),
-                              child: const Text("สถานะ"),
-                            ),
-                          ],
+
+        child: isLoading
+            ? Center(child: CircularProgressIndicator()) // Loader ขณะโหลด
+            : ListView.builder(
+                itemCount: orders.length, // เปลี่ยนจำนวนรายการตามต้องการ
+                itemBuilder: (context, index) {
+                  final order = orders[index];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 24),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.3),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 25),
+                          child: Image.asset(
+                            'assets/images/logo_delivery.jpg',
+                            width: 60,
+                            height: 60,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.location_on,
+                                    color: Colors.red,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    order['receiver_address'],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(left: 20),
+                                child: Text(
+                                  'ชื่อผู้รับ : ${order['receiverName']}',
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.location_on,
+                                    color: Colors.green,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    order['sender_address'],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(left: 20),
+                                child: Text(
+                                  'ชื่อผู้ส่ง : ${order['senderName']}',
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {},
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.orange,
+                                      foregroundColor: Colors.black,
+                                    ),
+                                    child: const Text("รายละเอียด"),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => Senderstatus(
+                                            oid: order['order_id'],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.orange,
+                                      foregroundColor: Colors.black,
+                                    ),
+                                    child: const Text("สถานะ"),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
-            );
-          },
-        ),
       ),
     );
+  }
+
+  void getOrder() async {
+    setState(() {
+      isLoading = true; // เริ่มโหลด
+    });
+    final docOrder = db
+        .collection("orders")
+        .where("sender_id", isEqualTo: widget.uid)
+        .where("status", isLessThan: 4);
+
+    var userDoc = db.collection('users');
+    var addressDoc = db.collection('address');
+    if (listenerShipping != null) {
+      await listenerShipping!.cancel();
+      listenerShipping = null;
+    }
+
+    listenerShipping = docOrder.snapshots().listen((querySnapshot) async {
+      List<Map<String, dynamic>> tempList = [];
+      for (var doc in querySnapshot.docs) {
+        var data = doc.data();
+        var senderId = data['sender_id'];
+        var receiverId = data['receiver_id'];
+        var senderAddress = data['sender_address_id'];
+        var receiverAddress = data['receiver_address_id'];
+
+        var userQuerySender = await userDoc.doc(senderId).get();
+        var userQueryReceiver = await userDoc.doc(receiverId).get();
+        var addressSender = await addressDoc.doc(senderAddress).get();
+        var addressReceiver = await addressDoc.doc(receiverAddress).get();
+
+        var senderData = userQuerySender.data();
+        var receiverData = userQueryReceiver.data();
+        var senderAddressData = addressSender.data();
+        var receiverAddressData = addressReceiver.data();
+
+        var senderAddressString = await getAddressFromLatLng(
+          senderAddressData!['latitude'],
+          senderAddressData!['longitude'],
+        );
+
+        var receiverAddressString = await getAddressFromLatLng(
+          receiverAddressData!['latitude'],
+          receiverAddressData!['longitude'],
+        );
+
+        var fullData = {
+          "order_id": doc.id,
+          "orderImg": data['order_image'],
+          "senderName": senderData!['name'],
+          "sender_address": senderAddressString,
+
+          "receiverName": receiverData!['name'],
+          "receiver_address": receiverAddressString,
+        };
+
+        tempList.add(fullData);
+      }
+      setState(() {
+        orders = tempList;
+        isLoading = false; // โหลดเสร็จแล้ว
+      });
+      log("Shipping => $orders");
+    });
+  }
+
+  Future<String?> getAddressFromLatLng(
+    double latitude,
+    double longitude,
+  ) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        latitude,
+        longitude,
+      );
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks.first;
+
+        // เอาแค่ชื่อเมือง (locality)
+        return place.locality; // เช่น "Kantharawichai"
+      }
+    } catch (e) {
+      print("Error reverse geocoding: $e");
+    }
+    return null;
   }
 }

@@ -25,7 +25,6 @@ class Login extends StatelessWidget {
 /// หน้าแรก
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,6 +110,7 @@ class _LoginPageState extends State<LoginPage> {
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
   var db = FirebaseFirestore.instance;
+  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -120,96 +120,101 @@ class _LoginPageState extends State<LoginPage> {
         toolbarHeight: 90,
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            Image.asset('assets/images/logo_delivery_login.jpg'),
-            const SizedBox(height: 8),
-            Text(
-              "SnapSend",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFFFDE10A),
-                backgroundColor: Colors.white,
-              ),
-            ),
-
-            const SizedBox(height: 40),
-            TextField(
-              controller: phoneController,
-              decoration: InputDecoration(
-                hintText: "เบอร์โทรศัพท์",
-                filled: true,
-                fillColor: const Color.fromARGB(255, 226, 226, 226),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                hintText: "รหัสผ่าน",
-                filled: true,
-                fillColor: const Color.fromARGB(255, 226, 226, 226),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () => loginUser(),
-                child: const Text(
-                  "เข้าสู่ระบบ",
-                  style: TextStyle(fontSize: 16, color: Colors.black),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text("ยังไม่ได้สมัคร SnapSend? "),
-                GestureDetector(
-                  onTap: () {
-                    //  ไปหน้า Register
-                  },
-                  child: Text(
-                    "ลงทะเบียน",
+      body: isLoading
+          ? Center(child: CircularProgressIndicator()) // Loader ขณะโหลด
+          : Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  Image.asset('assets/images/logo_delivery_login.jpg'),
+                  const SizedBox(height: 8),
+                  Text(
+                    "SnapSend",
                     style: TextStyle(
-                      color: const Color(0xFFFDE10A),
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
+                      color: const Color(0xFFFDE10A),
+                      backgroundColor: Colors.white,
                     ),
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 40),
+                  TextField(
+                    controller: phoneController,
+                    decoration: InputDecoration(
+                      hintText: "เบอร์โทรศัพท์",
+                      filled: true,
+                      fillColor: const Color.fromARGB(255, 226, 226, 226),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      hintText: "รหัสผ่าน",
+                      filled: true,
+                      fillColor: const Color.fromARGB(255, 226, 226, 226),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: () => loginUser(),
+                      child: const Text(
+                        "เข้าสู่ระบบ",
+                        style: TextStyle(fontSize: 16, color: Colors.black),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("ยังไม่ได้สมัคร SnapSend? "),
+                      GestureDetector(
+                        onTap: () {
+                          //  ไปหน้า Register
+                        },
+                        child: Text(
+                          "ลงทะเบียน",
+                          style: TextStyle(
+                            color: const Color(0xFFFDE10A),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
     );
   }
 
   void loginUser() async {
+    setState(() {
+      isLoading = true;
+    });
     var phoneInput = phoneController.text.trim();
     log(phoneInput);
     var indexRef = db.collection('users');
@@ -248,6 +253,9 @@ class _LoginPageState extends State<LoginPage> {
             actions: [
               TextButton(
                 onPressed: () {
+                  setState(() {
+                    isLoading = false;
+                  });
                   Navigator.of(context).pop(); // ปิด dialog
                 },
                 child: const Text("ปิด"),
@@ -283,6 +291,9 @@ class _LoginPageState extends State<LoginPage> {
             actions: [
               TextButton(
                 onPressed: () {
+                  setState(() {
+                    isLoading = false;
+                  });
                   Navigator.of(context).pop(); // ปิด dialog
                 },
                 child: const Text("ปิด"),
@@ -293,7 +304,6 @@ class _LoginPageState extends State<LoginPage> {
       }
     } else {
       log('ไม่มีบัญชีนี้');
-
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -302,6 +312,9 @@ class _LoginPageState extends State<LoginPage> {
           actions: [
             TextButton(
               onPressed: () {
+                setState(() {
+                  isLoading = false;
+                });
                 Navigator.of(context).pop(); // ปิด dialog
               },
               child: const Text("ปิด"),
