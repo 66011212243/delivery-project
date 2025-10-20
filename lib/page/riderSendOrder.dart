@@ -278,12 +278,18 @@ class _RidersendorderState extends State<Ridersendorder> {
                     Row(
                       children: [
                         ClipOval(
-                          child: Image.network(
-                            orderData?['senderImage'],
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover, // ให้ภาพเต็มวงกลม
-                          ),
+                          child: orderData?['senderImage'] != null
+                              ? Image.network(
+                                  orderData!['senderImage'],
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                )
+                              : Container(
+                                  width: 50,
+                                  height: 50,
+                                  color: Colors.grey, // สีเทา
+                                ),
                         ),
                         const SizedBox(width: 10),
                         Column(
@@ -350,12 +356,18 @@ class _RidersendorderState extends State<Ridersendorder> {
                         ),
                         const SizedBox(width: 10),
                         ClipOval(
-                          child: Image.network(
-                            orderData?['receiverImage'],
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover, // ให้ภาพเต็มวงกลม
-                          ),
+                          child: orderData?['receiverImage'] != null
+                              ? Image.network(
+                                  orderData!['receiverImage'],
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                )
+                              : Container(
+                                  width: 50,
+                                  height: 50,
+                                  color: Colors.grey, // สีเทาเป็น placeholder
+                                ),
                         ),
                       ],
                     ),
@@ -444,7 +456,6 @@ class _RidersendorderState extends State<Ridersendorder> {
                       color: Color.fromARGB(255, 241, 241, 241),
                     ),
                     child: Container(
-
                       child: (imageStatus4 != null)
                           ? Image.file(
                               File(imageStatus4!.path),
@@ -756,7 +767,7 @@ class _RidersendorderState extends State<Ridersendorder> {
   }
 
   void updateLatLng() {
-    Timer.periodic(Duration(seconds: 2), (timer) async {
+    Timer.periodic(Duration(seconds: 7), (timer) async {
       Position position = await _determinePosition();
       await db.collection('riders').doc(orderData!['rider_id']).update({
         'latitude': position.latitude,
