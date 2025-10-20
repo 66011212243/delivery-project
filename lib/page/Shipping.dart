@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:developer';
 
-import 'package:delivery/page/senderStatus.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geocoding/geocoding.dart';
@@ -13,19 +11,94 @@ class Shipping extends StatefulWidget {
   @override
   State<Shipping> createState() => _ShippingState();
 }
-
 class _ShippingState extends State<Shipping> {
   var db = FirebaseFirestore.instance;
   StreamSubscription? listenerShipping;
   List<Map<String, dynamic>> orders = [];
   bool isLoading = true;
 
+String name = '';
+String phone = '';
+String profileUrl = '';
+String address = '';
+String riderUsers = '';
+  List<Map<String, dynamic>> orders = [];
+  bool isLoading = true;
+  
   @override
   void initState() {
     super.initState();
-    getOrder();
+    fetchRiderData();
   }
 
+   List<Map<String, dynamic>> tempList = [];
+   Future<void> fetchRiderData() async {
+  try {
+    // 1ดึงข้อมูลผู้ใช้จาก collection 'users'
+    QuerySnapshot userSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('user_id', isEqualTo: widget.uid)
+        .get();
+
+    // 2️ดึงข้อมูลผู้ขับขี่จาก collection 'riders'
+    QuerySnapshot ridersSnapshot = await FirebaseFirestore.instance
+        .collection('riders')
+        .where('user_id', isEqualTo: widget.uid)
+        .get();
+
+    // 3️ดึงข้อมูลที่อยู่จาก collection 'address'
+    QuerySnapshot addressSnapshot = await FirebaseFirestore.instance
+        .collection('address')
+        .where('user_id', isEqualTo: widget.uid)
+        .get();
+
+    // แยกค่าที่ต้องการจาก ridersSnapshot
+    String riderName = ridersSnapshot.docs.isNotEmpty
+        ? (ridersSnapshot.docs.first.data() as Map<String, dynamic>)['users'] ?? 'ไม่พบผู้ใช้'
+        : 'ไม่พบผู้ใช้';
+
+    // แยกค่าที่อยู่
+    String address = addressSnapshot.docs.isNotEmpty
+        ? (addressSnapshot.docs.first.data() as Map<String, dynamic>)['address'] ?? 'ไม่พบที่อยู่'
+        : 'ไม่พบที่อยู่';
+
+    // ตรวจสอบว่ามีผู้ใช้หรือไม่
+    if (userSnapshot.docs.isNotEmpty) {
+      final userData = userSnapshot.docs.first.data() as Map<String, dynamic>;
+
+      setState(() {
+        name = userData['name'] ?? 'ไม่พบชื่อ';
+        phone = userData['phone'] ?? '-';
+        profileUrl = userData['profile_image'] ?? '';
+        address = address;      
+        riderUsers = riderName;  
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        name = 'ไม่พบผู้ใช้';
+        phone = '-';
+        profileUrl = '';
+        address = address;
+        riderUsers = riderName;
+        isLoading = false;
+      });
+    }
+  } catch (e) {
+    print('Error fetching rider data: $e');
+    setState(() {
+      isLoading = false;
+      name = 'ข้อผิดพลาดในการโหลดข้อมูล';
+      phone = '-';
+      profileUrl = '';
+      address = '-';
+      riderUsers = '-';
+    });
+  }
+}
+
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
