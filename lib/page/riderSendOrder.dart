@@ -25,6 +25,7 @@ class Ridersendorder extends StatefulWidget {
 class _RidersendorderState extends State<Ridersendorder> {
   var db = FirebaseFirestore.instance;
   StreamSubscription? listener;
+  StreamSubscription? listenerRider;
   List<Map<String, dynamic>> orders = [];
   bool isLoading = true;
   Map<String, dynamic>? orderData;
@@ -71,77 +72,46 @@ class _RidersendorderState extends State<Ridersendorder> {
                     userAgentPackageName: 'com.example.delivery',
                   ),
 
-                  if (orderData != null && orderData!['status'] == 2)
-                    if (getLatLng?['latitudeSender'] != null &&
-                        getLatLng?['longitudeSender'] !=
-                            null) // วางหมุดเฉพาะเมื่อมีค่าพิกัด
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: LatLng(
-                              getLatLng!['latitudeSender']!,
-                              getLatLng!['longitudeSender']!,
-                            ),
-                            width: 40,
-                            height: 40,
-                            child: Icon(
-                              Icons.location_on,
-                              color: Colors.red,
-                              size: 40,
-                            ),
+                  MarkerLayer(
+                    markers: [
+                      if (orderData != null &&
+                          orderData!['status'] == 2 &&
+                          getLatLng?['latitudeSender'] != null &&
+                          getLatLng?['longitudeSender'] != null)
+                        Marker(
+                          point: LatLng(
+                            getLatLng!['latitudeSender']!,
+                            getLatLng!['longitudeSender']!,
                           ),
-                        ],
-                      ),
-                  if (orderData != null && orderData!['status'] == 3)
-                    if (getLatLng?['latitudeReceiver'] != null &&
-                        getLatLng?['longitudeReceiver'] !=
-                            null) // วางหมุดเฉพาะเมื่อมีค่าพิกัด
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: LatLng(
-                              getLatLng!['latitudeReceiver']!,
-                              getLatLng!['longitudeReceiver']!,
-                            ),
-                            width: 40,
-                            height: 40,
-                            child: Icon(
-                              Icons.location_on,
-                              color: Colors.red,
-                              size: 40,
-                            ),
+                          width: 40,
+                          height: 40,
+                          child: Icon(
+                            Icons.location_on,
+                            color: Colors.red,
+                            size: 40,
                           ),
-                        ],
-                      ),
-
-                  if (getLatLngRider != null &&
-                      getLatLng?['latitudeSender'] != null &&
-                      getLatLng?['longitudeSender'] != null)
-                    PolylineLayer(
-                      polylines: [
-                        Polyline(
-                          points: [
-                            LatLng(
-                              getLatLngRider!['latitudeRider'],
-                              getLatLngRider!['longitudeRider'],
-                            ),
-                            LatLng(
-                              getLatLng!['latitudeSender'],
-                              getLatLng!['longitudeSender'],
-                            ),
-                          ],
-                          color: Colors
-                              .blue, // ✅ เปลี่ยนสีได้ เช่น Colors.green, Colors.orange
-                          strokeWidth: 5.0,
                         ),
-                      ],
-                    ),
+                      if (orderData != null &&
+                          orderData!['status'] == 3 &&
+                          getLatLng?['latitudeReceiver'] != null &&
+                          getLatLng?['longitudeReceiver'] != null)
+                        Marker(
+                          point: LatLng(
+                            getLatLng!['latitudeReceiver']!,
+                            getLatLng!['longitudeReceiver']!,
+                          ),
+                          width: 40,
+                          height: 40,
+                          child: Icon(
+                            Icons.location_on,
+                            color: Colors.red,
+                            size: 40,
+                          ),
+                        ),
 
-                  if (getLatLngRider?['latitudeRider'] != null &&
-                      getLatLngRider?['longitudeRider'] !=
-                          null) // วางหมุดเฉพาะเมื่อมีค่าพิกัด
-                    MarkerLayer(
-                      markers: [
+                      if (orderData != null &&
+                          getLatLngRider?['latitudeRider'] != null &&
+                          getLatLngRider?['longitudeRider'] != null)
                         Marker(
                           point: LatLng(
                             getLatLngRider!['latitudeRider']!,
@@ -149,13 +119,10 @@ class _RidersendorderState extends State<Ridersendorder> {
                           ),
                           width: 40,
                           height: 40,
-                          child: Image.asset(
-                            'assets/images/bike.png',
-                            width: 40,
-                          ),
+                          child: Image.asset('assets/images/bike.png'),
                         ),
-                      ],
-                    ),
+                    ],
+                  ),
 
                   Column(
                     children: [
@@ -477,7 +444,7 @@ class _RidersendorderState extends State<Ridersendorder> {
                       color: Color.fromARGB(255, 241, 241, 241),
                     ),
                     child: Container(
-                      // ตัดให้เป็นวงกลม
+
                       child: (imageStatus4 != null)
                           ? Image.file(
                               File(imageStatus4!.path),
@@ -628,11 +595,11 @@ class _RidersendorderState extends State<Ridersendorder> {
 
   void getLocation() async {
     var riderDoc = db.collection('riders').doc(orderData!['rider_id']);
-    if (listener != null) {
-      await listener!.cancel();
-      listener = null;
+    if (listenerRider != null) {
+      await listenerRider!.cancel();
+      listenerRider = null;
     }
-    listener = riderDoc.snapshots().listen((event) {
+    listenerRider = riderDoc.snapshots().listen((event) {
       var data = event.data();
       var latitude = data?['latitude'];
       var longitude = data?['longitude'];
@@ -789,7 +756,7 @@ class _RidersendorderState extends State<Ridersendorder> {
   }
 
   void updateLatLng() {
-    Timer.periodic(Duration(seconds: 5), (timer) async {
+    Timer.periodic(Duration(seconds: 2), (timer) async {
       Position position = await _determinePosition();
       await db.collection('riders').doc(orderData!['rider_id']).update({
         'latitude': position.latitude,
