@@ -1,3 +1,6 @@
+import 'package:delivery/page/AddressPage.dart';
+import 'package:delivery/page/homepageRider.dart';
+import 'package:delivery/page/mapAddress.dart';
 import 'package:delivery/page/Receive.dart';
 import 'package:delivery/page/homepageRider.dart';
 import 'package:delivery/page/homepageUser.dart';
@@ -194,6 +197,23 @@ class _ProfileuserState extends State<Profileuser> {
                                       address ?? '-',
                                       style: TextStyle(fontSize: 18),
                                     ),
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddressPage(uid: widget.uid),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  'เพิ่มที่อยู่',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.blue,
                                   ),
                                 ),
                               ),
