@@ -48,6 +48,12 @@ class _RidersendorderState extends State<Ridersendorder> {
     // updateLatLng();
   }
 
+  @override
+  void dispose() {
+    stopRealtime();
+    super.dispose();
+  }
+
   int activeStep = 0;
 
   var mapController = MapController();
@@ -801,5 +807,20 @@ class _RidersendorderState extends State<Ridersendorder> {
     }
 
     return await Geolocator.getCurrentPosition();
+  }
+
+  void stopRealtime() async {
+    try {
+      if (listener != null) {
+        await listener!.cancel();
+        listener = null;
+      }
+      if (listenerRider != null) {
+        await listenerRider!.cancel();
+        listener = null;
+      }
+    } catch (e) {
+      log('Listener is not running...');
+    }
   }
 }
