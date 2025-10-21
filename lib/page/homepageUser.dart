@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delivery/page/HistoryUser.dart';
+import 'package:delivery/page/Receive.dart';
 import 'package:delivery/page/profileUser.dart';
 import 'package:delivery/page/Product_details.dart';
 import 'package:delivery/page/Shipping.dart';
@@ -129,7 +130,7 @@ class _HomePageUserState extends State<HomePageUser> {
           if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const Product_details()),
+              MaterialPageRoute(builder: (context) => Receive(uid: widget.uid)),
             );
           }
           if (index == 1) {

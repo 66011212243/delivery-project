@@ -164,9 +164,9 @@ class _ShippingState extends State<Shipping> {
   }
 
   void getOrder() async {
-    setState(() {
-      isLoading = true; // เริ่มโหลด
-    });
+    // setState(() {
+    //   isLoading = true; // เริ่มโหลด
+    // });
     final docOrder = db
         .collection("orders")
         .where("sender_id", isEqualTo: widget.uid)

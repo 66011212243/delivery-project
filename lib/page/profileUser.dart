@@ -1,4 +1,6 @@
+import 'package:delivery/page/Receive.dart';
 import 'package:delivery/page/homepageRider.dart';
+import 'package:delivery/page/homepageUser.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delivery/page/HistoryUser.dart';
@@ -13,7 +15,7 @@ class Profileuser extends StatefulWidget {
 }
 
 class _ProfileuserState extends State<Profileuser> {
-  int _currentIndex = 0;
+  int _currentIndex = 3;
 
   String? name;
   String? phone;
@@ -211,24 +213,26 @@ class _ProfileuserState extends State<Profileuser> {
         selectedItemColor: const Color(0xFFFDE10A),
         unselectedItemColor: Colors.grey,
         onTap: (index) {
-          if (index == 3) {
+          if (index == 0) {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Profileuser(uid: widget.uid),
+                builder: (context) => HomePageUser(uid: widget.uid),
               ),
             );
           }
           if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const Product_details()),
+              MaterialPageRoute(builder: (context) => Receive(uid: widget.uid)),
             );
           }
           if (index == 1) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) =>  HistoryUser(uid: widget.uid)),
+              MaterialPageRoute(
+                builder: (context) => HistoryUser(uid: widget.uid),
+              ),
             );
           } else {
             setState(() {
