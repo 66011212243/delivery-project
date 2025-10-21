@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class Receive extends StatelessWidget {
-  const Receive({super.key});
+ final String uid;
+  const Receive({super.key, required this.uid});
 
   @override
   Widget build(BuildContext context) {

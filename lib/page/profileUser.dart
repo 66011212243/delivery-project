@@ -1,4 +1,6 @@
+import 'package:delivery/page/AddressPage.dart';
 import 'package:delivery/page/homepageRider.dart';
+import 'package:delivery/page/mapAddress.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delivery/page/HistoryUser.dart';
@@ -195,6 +197,23 @@ class _ProfileuserState extends State<Profileuser> {
                                   ),
                                 ),
                               ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddressPage(uid: widget.uid),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  'เพิ่มที่อยู่',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                              ),
 
                               // --- ส่วนที่อยู่ถูกลบออกไปแล้ว ---
                             ],
@@ -222,13 +241,17 @@ class _ProfileuserState extends State<Profileuser> {
           if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const Product_details()),
+              MaterialPageRoute(
+                builder: (context) => Product_details(uid: widget.uid),
+              ),
             );
           }
           if (index == 1) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) =>  HistoryUser(uid: widget.uid)),
+              MaterialPageRoute(
+                builder: (context) => HistoryUser(uid: widget.uid),
+              ),
             );
           } else {
             setState(() {

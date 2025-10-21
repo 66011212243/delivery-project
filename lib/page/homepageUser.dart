@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delivery/page/HistoryUser.dart';
+import 'package:delivery/page/Receive.dart';
 import 'package:delivery/page/profileUser.dart';
 import 'package:delivery/page/Product_details.dart';
 import 'package:delivery/page/Shipping.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'dart:async';
 import 'dart:developer';
 import 'dart:convert';
@@ -29,6 +31,101 @@ class _HomePageUserState extends State<HomePageUser> {
     Center(child: Text('อื่นๆ')),
   ];
 
+   var db = FirebaseFirestore.instance;
+  StreamSubscription? listenerShipping;
+  List<Map<String, dynamic>> orders = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    getOrder();
+  }
+
+void getOrder() async {
+    setState(() {
+      isLoading = true; // เริ่มโหลด
+    });
+    final docOrder = db
+        .collection("orders")
+        .where("sender_id", isEqualTo: widget.uid)
+        .where("status", isLessThan: 4);
+
+    var userDoc = db.collection('users');
+    var addressDoc = db.collection('address');
+    if (listenerShipping != null) {
+      await listenerShipping!.cancel();
+      listenerShipping = null;
+    }
+
+    listenerShipping = docOrder.snapshots().listen((querySnapshot) async {
+      List<Map<String, dynamic>> tempList = [];
+      for (var doc in querySnapshot.docs) {
+        var data = doc.data();
+        var senderId = data['sender_id'];
+        var receiverId = data['receiver_id'];
+        var senderAddress = data['sender_address_id'];
+        var receiverAddress = data['receiver_address_id'];
+
+        var userQuerySender = await userDoc.doc(senderId).get();
+        var userQueryReceiver = await userDoc.doc(receiverId).get();
+        var addressSender = await addressDoc.doc(senderAddress).get();
+        var addressReceiver = await addressDoc.doc(receiverAddress).get();
+
+        var senderData = userQuerySender.data();
+        var receiverData = userQueryReceiver.data();
+        var senderAddressData = addressSender.data();
+        var receiverAddressData = addressReceiver.data();
+
+        var senderAddressString = await getAddressFromLatLng(
+          senderAddressData!['latitude'],
+          senderAddressData!['longitude'],
+        );
+
+        var receiverAddressString = await getAddressFromLatLng(
+          receiverAddressData!['latitude'],
+          receiverAddressData!['longitude'],
+        );
+
+        var fullData = {
+          "order_id": doc.id,
+          "orderImg": data['order_image'],
+          "senderName": senderData!['name'],
+          "sender_address": senderAddressString,
+
+          "receiverName": receiverData!['name'],
+          "receiver_address": receiverAddressString,
+        };
+
+        tempList.add(fullData);
+      }
+      setState(() {
+        orders = tempList;
+        isLoading = false; // โหลดเสร็จแล้ว
+      });
+      log("Shipping => $orders");
+    });
+  }
+  Future<String?> getAddressFromLatLng(
+    double latitude,
+    double longitude,
+  ) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        latitude,
+        longitude,
+      );
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks.first;
+
+        // เอาแค่ชื่อเมือง (locality)
+        return place.locality; // เช่น "Kantharawichai"
+      }
+    } catch (e) {
+      print("Error reverse geocoding: $e");
+    }
+    return null;
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -109,10 +206,14 @@ class _HomePageUserState extends State<HomePageUser> {
                 icon: const Icon(Icons.inventory, color: Colors.yellow),
                 label: const Text("ดูสินค้าที่กำลังส่ง"),
               ),
+              
+
             ],
           ),
         ],
       ),
+      
+      
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         selectedItemColor: const Color(0xFFFDE10A),
@@ -129,7 +230,7 @@ class _HomePageUserState extends State<HomePageUser> {
           if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const Product_details()),
+              MaterialPageRoute(builder: (context) =>  Shipping(uid: widget.uid)),
             );
           }
           if (index == 1) {
