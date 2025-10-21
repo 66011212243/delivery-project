@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_stepper/easy_stepper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
@@ -44,6 +45,12 @@ class _SenderstatusState extends State<Senderstatus> {
     super.initState();
     log("🔥 initState called");
     getGps();
+  }
+
+  @override
+  void dispose() {
+    stopRealtime();
+    super.dispose();
   }
 
   @override
@@ -368,8 +375,8 @@ class _SenderstatusState extends State<Senderstatus> {
                       ),
                       child: Container(
                         child: (orderData!['imgStatus4'] != null)
-                            ? Image.file(
-                                File(orderData!['imgStatus4']!.path),
+                            ? Image.network(
+                                orderData!['imgStatus4'],
                                 fit: BoxFit.cover,
                               )
                             : Center(child: GestureDetector(onTap: () {})),
@@ -409,8 +416,8 @@ class _SenderstatusState extends State<Senderstatus> {
 
       // log("🔥 status = $status");
       // if (status == 4) {
-      //   log("🔥 status = $status");
-      //   log("🔥 image_status4 = ${data?['image_status4']}");
+      // log("🔥 status = $status");
+      // log("🔥 image_status4 = ${data?['image_status4']}");
 
       setState(() {
         orderData = {
@@ -534,6 +541,58 @@ class _SenderstatusState extends State<Senderstatus> {
     } catch (e) {
       print("Upload error: $e");
       return null;
+    }
+  }
+
+  void updateLatLng() {
+    Timer.periodic(Duration(seconds: 7), (timer) async {
+      Position position = await _determinePosition();
+      await db.collection('riders').doc(orderData!['rider_id']).update({
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+      });
+      log('Lat: ${position.latitude}, Lng: ${position.longitude}');
+    });
+  }
+
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+        'Location permissions are permanently denied, we cannot request permissions.',
+      );
+    }
+
+    return await Geolocator.getCurrentPosition();
+  }
+
+  void stopRealtime() async {
+    try {
+      if (listener != null) {
+        await listener!.cancel();
+        listener = null;
+      }
+      if (listenerRider != null) {
+        await listenerRider!.cancel();
+        listener = null;
+      }
+    } catch (e) {
+      log('Listener is not running...');
     }
   }
 }

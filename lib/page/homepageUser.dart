@@ -230,7 +230,7 @@ void getOrder() async {
           if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) =>  Shipping(uid: widget.uid)),
+              MaterialPageRoute(builder: (context) => Receive(uid: widget.uid)),
             );
           }
           if (index == 1) {
