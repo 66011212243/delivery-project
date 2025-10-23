@@ -4,7 +4,13 @@ import 'package:geocoding/geocoding.dart';
 
 class Product_details extends StatefulWidget {
   final String uid;
-  const Product_details({super.key, required this.uid});
+  final String orderId; // รับ orderId
+
+  const Product_details({
+    super.key,
+    required this.uid,
+    required this.orderId,
+  });
 
   @override
   State<Product_details> createState() => _Product_detailsState();
@@ -18,116 +24,104 @@ class _Product_detailsState extends State<Product_details> {
   String senderAddress = '';
   String receiverAddress = '';
   String details = '';
-  String image_status1 = '';
+  String order_image = '';
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    fetchOrdersOnce();
+    fetchOrderById(); // เรียกข้อมูล order
   }
 
-  Future<void> fetchOrdersOnce() async {
+  Future<void> fetchOrderById() async {
     setState(() {
       isLoading = true;
     });
 
     try {
-      final ordersSnapshot = await FirebaseFirestore.instance
+      // ดึง order ตาม orderId
+      final doc = await FirebaseFirestore.instance
           .collection("orders")
-          .where("status", isEqualTo: 2)
+          .doc(widget.orderId)
           .get();
 
-      final filteredOrders = ordersSnapshot.docs.where((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        return data['sender_id'] == widget.uid ||
-            data['receiver_id'] == widget.uid;
-      }).toList();
-
-      if (filteredOrders.isEmpty) {
-        setState(() {
-          isLoading = false;
-        });
+      if (!doc.exists) {
+        setState(() => isLoading = false);
         return;
       }
 
-      final usersSnapshot = await FirebaseFirestore.instance
-          .collection("users")
-          .get();
-      final addressSnapshot = await FirebaseFirestore.instance
-          .collection("address")
-          .get();
+      final data = doc.data() as Map<String, dynamic>;
+
+      // ดึงข้อมูล user และ address
+      final usersSnapshot =
+          await FirebaseFirestore.instance.collection("users").get();
+      final addressSnapshot =
+          await FirebaseFirestore.instance.collection("address").get();
 
       Map<String, Map<String, dynamic>> userMap = {
-        for (var doc in usersSnapshot.docs)
-          doc.id: doc.data() as Map<String, dynamic>,
+        for (var u in usersSnapshot.docs) u.id: u.data() as Map<String, dynamic>,
       };
 
       Map<String, Map<String, dynamic>> addressMap = {
-        for (var doc in addressSnapshot.docs)
-          doc.id: doc.data() as Map<String, dynamic>,
+        for (var a in addressSnapshot.docs)
+          a.id: a.data() as Map<String, dynamic>,
       };
-
-      // ใช้แค่ order แรกเป็นตัวอย่าง
-      final data = filteredOrders.first.data() as Map<String, dynamic>;
 
       var senderData = userMap[data['sender_id']];
       var receiverData = userMap[data['receiver_id']];
-
       var senderAddressData = addressMap[data['sender_address_id']];
       var receiverAddressData = addressMap[data['receiver_address_id']];
 
       var senderAddressString = senderAddressData != null
           ? await getAddressFromLatLng(
-              senderAddressData['latitude'],
-              senderAddressData['longitude'],
-            )
+              senderAddressData['latitude'], senderAddressData['longitude'])
           : "-";
 
       var receiverAddressString = receiverAddressData != null
           ? await getAddressFromLatLng(
-              receiverAddressData['latitude'],
-              receiverAddressData['longitude'],
-            )
+              receiverAddressData['latitude'], receiverAddressData['longitude'])
           : "-";
 
-      // ✅ อัปเดต state เพื่อให้ UI แสดงผล
       setState(() {
         senderName = senderData?['name'] ?? '-';
         receiverName = receiverData?['name'] ?? '-';
         senderImage = senderData?['profile_image'] ?? '';
         receiverImage = receiverData?['profile_image'] ?? '';
-        details = data['details'];
-        image_status1 = data['image_status1'];
-        senderAddress = senderAddressString ?? '-';
-        receiverAddress = receiverAddressString ?? '-';
+        details = data['details'] ?? '-';
+        order_image = data['order_image'] ?? '';
+        senderAddress = senderAddressString;
+        receiverAddress = receiverAddressString;
         isLoading = false;
       });
     } catch (e) {
-      print("Error fetching orders: $e");
+      debugPrint("Error fetching order: $e");
       setState(() {
         isLoading = false;
       });
     }
   }
 
-  Future<String?> getAddressFromLatLng(
-    double latitude,
-    double longitude,
-  ) async {
+  // เพิ่มเมธอด getAddressFromLatLng
+  Future<String> getAddressFromLatLng(double latitude, double longitude) async {
     try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        latitude,
-        longitude,
-      );
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(latitude, longitude);
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks.first;
-        return place.locality;
+        final parts = [
+          place.street,
+          place.subLocality,
+          place.locality,
+          place.subAdministrativeArea,
+          place.administrativeArea
+        ].where((p) => p != null && p.toString().trim().isNotEmpty).toList();
+        return parts.join(', ');
       }
+      return '-';
     } catch (e) {
-      print("Error reverse geocoding: $e");
+      debugPrint("Error reverse geocoding: $e");
+      return '-';
     }
-    return null;
   }
 
   @override
@@ -201,26 +195,24 @@ class _Product_detailsState extends State<Product_details> {
               child: Row(
                 children: [
                   Container(
-                          width: 60, // ขยายขนาด
-                          height: 60, // ขยายขนาด
-                          decoration: BoxDecoration(
-                            color: Color.fromARGB(255, 241, 241, 241),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          clipBehavior:
-                              Clip.hardEdge, // ตัดขอบโค้งให้ Container
-                          child: Image(
-                            image:
-                                image_status1 != null &&
-                                    image_status1!.isNotEmpty
-                                ? NetworkImage(image_status1!)
-                                : AssetImage('assets/images/pfboy.png'),
-                            width: double.infinity, 
-                            height: double.infinity, 
-                            fit: BoxFit.cover, 
-                            alignment: Alignment.center, 
-                          ),
-                        ),
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 241, 241, 241),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    clipBehavior: Clip.hardEdge,
+                    child: Image(
+                      image: order_image.isNotEmpty
+                          ? NetworkImage(order_image)
+                          : const AssetImage('assets/images/box.png')
+                              as ImageProvider,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.center,
+                    ),
+                  ),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,4 +234,3 @@ class _Product_detailsState extends State<Product_details> {
     );
   }
 }
-

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:delivery/page/Product_details.dart';
 import 'package:delivery/page/coordinatesSender.dart';
 import 'package:delivery/page/senderStatus.dart';
 import 'package:flutter/material.dart';
@@ -120,6 +121,32 @@ class _ShippingState extends State<Shipping> {
                                         ),
                                       ],
                                     ),
+                                  ),
+                                ],
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(left: 20),
+                                child: Text(
+                                  'ชื่อผู้ส่ง : ${order['senderName']}',
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              Product_details(uid: widget.uid,orderId: order['order_id'],),
+                                        ),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.orange,
+                                      foregroundColor: Colors.black,
                                     Padding(
                                       padding: EdgeInsets.only(left: 20),
                                       child: Text(

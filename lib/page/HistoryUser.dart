@@ -1,3 +1,5 @@
+import 'dart:math' hide log;
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delivery/page/Product_details.dart';
 import 'package:delivery/page/Receive.dart';
@@ -114,7 +116,7 @@ class _HistoryUserState extends State<HistoryUser> {
 
         // รวมข้อมูลทั้งหมด
         var fullOrder = {
-          "orderId": doc.id,
+          "order_id": doc.id,
           "senderName": senderData?['name'] ?? '-',
           "senderPhone": senderData?['phone'] ?? '-',
           "senderImage": senderData?['profile_image'] ?? '',
@@ -126,6 +128,7 @@ class _HistoryUserState extends State<HistoryUser> {
         };
 
         tempOrders.add(fullOrder);
+    
       }
 
       // 6️อัปเดต state
@@ -134,7 +137,7 @@ class _HistoryUserState extends State<HistoryUser> {
         isLoading = false;
       });
 
-      print("Fetched Orders => $orders");
+      log("Fetched Orders => $orders");
     } catch (e) {
       print("Error fetching orders: $e");
       setState(() {
@@ -261,13 +264,13 @@ class _HistoryUserState extends State<HistoryUser> {
                                 alignment: Alignment.centerRight,
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    // Navigator.push(
-                                    //   context,
-                                    //   MaterialPageRoute(
-                                    //     builder: (context) =>
-                                    //         const Product_details(),
-                                    //   ),
-                                    // );
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              Product_details(uid: widget.uid,orderId: order['order_id'],),
+                                        ),
+                                      );
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.orange,
@@ -301,7 +304,7 @@ class _HistoryUserState extends State<HistoryUser> {
           if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => Receive(uid:  widget.uid,)),
+              MaterialPageRoute(builder: (context) => Receive(uid: widget.uid)),
             );
           }
           if (index == 0) {
