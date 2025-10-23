@@ -38,15 +38,14 @@ class _ShippingState extends State<Shipping> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-
         child: isLoading
-            ? Center(child: CircularProgressIndicator()) // Loader ขณะโหลด
+            ? const Center(child: CircularProgressIndicator())
             : Column(
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(15),
                     child: Align(
-                      alignment: Alignment.centerRight, // ชิดขวา
+                      alignment: Alignment.centerRight,
                       child: ElevatedButton(
                         onPressed: () {
                           Navigator.push(
@@ -71,7 +70,7 @@ class _ShippingState extends State<Shipping> {
                   ),
                   Expanded(
                     child: ListView.builder(
-                      itemCount: orders.length, // เปลี่ยนจำนวนรายการตามต้องการ
+                      itemCount: orders.length,
                       itemBuilder: (context, index) {
                         final order = orders[index];
                         return Container(
@@ -89,129 +88,125 @@ class _ShippingState extends State<Shipping> {
                               ),
                             ],
                           ),
-                          child: Row(
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 25),
-                                child: Image.asset(
-                                  'assets/images/logo_delivery.jpg',
-                                  width: 60,
-                                  height: 60,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 25),
+                                    child: Image.asset(
+                                      'assets/images/logo_delivery.jpg',
+                                      width: 60,
+                                      height: 60,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Icon(
-                                          Icons.location_on,
-                                          color: Colors.red,
-                                          size: 20,
+                                        Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.location_on,
+                                              color: Colors.red,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              order['receiver_address'],
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          order['receiver_address'],
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 8,
                                           ),
+                                          child: Text(
+                                            'ชื่อผู้รับ : ${order['receiverName']}',
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.location_on,
+                                              color: Colors.green,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              order['sender_address'],
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 8,
+                                          ),
+                                          child: Text(
+                                            'ชื่อผู้ส่ง : ${order['senderName']}',
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        Product_details(
+                                                          uid: widget.uid,
+                                                          orderId:
+                                                              order['order_id'],
+                                                        ),
+                                                  ),
+                                                );
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.orange,
+                                                foregroundColor: Colors.black,
+                                              ),
+                                              child: const Text("รายละเอียด"),
+                                            ),
+                                            const SizedBox(width: 16),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        Senderstatus(
+                                                          oid:
+                                                              order['order_id'],
+                                                        ),
+                                                  ),
+                                                );
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.orange,
+                                                foregroundColor: Colors.black,
+                                              ),
+                                              child: const Text("สถานะ"),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
                                   ),
                                 ],
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(left: 20),
-                                child: Text(
-                                  'ชื่อผู้ส่ง : ${order['senderName']}',
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              Product_details(uid: widget.uid,orderId: order['order_id'],),
-                                        ),
-                                      );
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.orange,
-                                      foregroundColor: Colors.black,
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 20),
-                                      child: Text(
-                                        'ชื่อผู้รับ : ${order['receiverName']}',
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.location_on,
-                                          color: Colors.green,
-                                          size: 20,
-                                        ),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          order['sender_address'],
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 20),
-                                      child: Text(
-                                        'ชื่อผู้ส่ง : ${order['senderName']}',
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        ElevatedButton(
-                                          onPressed: () {},
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.orange,
-                                            foregroundColor: Colors.black,
-                                          ),
-                                          child: const Text("รายละเอียด"),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        ElevatedButton(
-                                          onPressed: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    Senderstatus(
-                                                      oid: order['order_id'],
-                                                    ),
-                                              ),
-                                            );
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.orange,
-                                            foregroundColor: Colors.black,
-                                          ),
-                                          child: const Text("สถานะ"),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
                               ),
                             ],
                           ),
