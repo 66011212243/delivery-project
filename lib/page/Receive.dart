@@ -1,6 +1,11 @@
+import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delivery/page/HistoryUser.dart';
+import 'package:delivery/page/coordinatesReceive.dart';
 import 'package:delivery/page/homepageUser.dart';
 import 'package:delivery/page/profileUser.dart';
+import 'package:delivery/page/receiverStatus.dart';
 import 'package:flutter/material.dart';
 
 class Receive extends StatefulWidget {
@@ -13,6 +18,15 @@ class Receive extends StatefulWidget {
 
 class _ReceiveState extends State<Receive> {
   int _currentIndex = 2;
+  var db = FirebaseFirestore.instance;
+  List<Map<String, dynamic>> orders = [];
+
+  @override
+  void initState() {
+    super.initState();
+    getOrder();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +46,13 @@ class _ReceiveState extends State<Receive> {
               alignment: Alignment.centerRight, // ชิดขวา
               child: ElevatedButton(
                 onPressed: () {
-                  //  ไปหน้าดูพิกัดไรเดอร์
+                  log("receive " + widget.uid);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Coordinates(uid: widget.uid),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
@@ -50,8 +70,9 @@ class _ReceiveState extends State<Receive> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: ListView.builder(
-                itemCount: 4,
+                itemCount: orders.length,
                 itemBuilder: (context, index) {
+                  final order = orders[index];
                   return Container(
                     margin: const EdgeInsets.only(bottom: 24),
                     padding: const EdgeInsets.all(16),
@@ -70,12 +91,20 @@ class _ReceiveState extends State<Receive> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // รูปภาพ
-                        Image.asset(
-                          'assets/images/logo_delivery.jpg',
-                          width: 60,
-                          height: 60,
+                        SizedBox(
+                          width: 100, // หรือ 80
+                          height: 100,
+                          child: order['order_image'] != null
+                              ? Image.network(
+                                  order['order_image'],
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.asset(
+                                  'assets/images/box.png',
+                                  fit: BoxFit.cover,
+                                ),
                         ),
+
                         const SizedBox(width: 12),
 
                         // ข้อมูลสินค้า + ปุ่ม
@@ -88,14 +117,20 @@ class _ReceiveState extends State<Receive> {
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 4),
-                              const Text('Samsung S25 Ultra 512GB | 12GB'),
-                              const Text('Titanium Jetblack'),
+                              Text(order['details']),
                               const SizedBox(height: 8),
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    //  ไปหน้าดูพิกัดไรเดอร์
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Receiverstatus(
+                                          oid: order['order_id'],
+                                        ),
+                                      ),
+                                    );
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.orange,
@@ -170,5 +205,28 @@ class _ReceiveState extends State<Receive> {
         ],
       ),
     );
+  }
+
+  void getOrder() async {
+    try {
+      var orderQuery = db
+          .collection('orders')
+          .where("receiver_id", isEqualTo: widget.uid);
+
+      var orderData = await orderQuery.where("status", isLessThan: 4).get();
+
+      var resultOrder = orderData.docs.map((doc) {
+        final data = doc.data();
+        data['order_id'] = doc.id;
+        return data;
+      }).toList();
+      log(resultOrder.toString());
+
+      setState(() {
+        orders = resultOrder;
+      });
+    } catch (err) {
+      log("error: $err");
+    }
   }
 }
