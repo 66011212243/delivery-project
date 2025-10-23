@@ -2,25 +2,23 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-
+import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_stepper/easy_stepper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 
-class Senderstatus extends StatefulWidget {
+class Receiverstatus extends StatefulWidget {
   String oid;
-  Senderstatus({super.key, required this.oid});
+  Receiverstatus({super.key, required this.oid});
 
   @override
-  State<Senderstatus> createState() => _SenderstatusState();
+  State<Receiverstatus> createState() => _ReceiverstatusState();
 }
 
-class _SenderstatusState extends State<Senderstatus> {
+class _ReceiverstatusState extends State<Receiverstatus> {
   var mapController = MapController();
   var db = FirebaseFirestore.instance;
   StreamSubscription? listener;
@@ -32,25 +30,12 @@ class _SenderstatusState extends State<Senderstatus> {
 
   Map<String, dynamic>? getLatLng;
   Map<String, dynamic>? getLatLngRider;
-
-  final ImagePicker picker = ImagePicker();
-  File? image;
-
-  XFile? selectedImage;
-  String? imageUrl;
   int activeStep = 0;
 
   @override
   void initState() {
     super.initState();
-    log("🔥 initState called");
     getGps();
-  }
-
-  @override
-  void dispose() {
-    stopRealtime();
-    super.dispose();
   }
 
   @override
@@ -198,7 +183,10 @@ class _SenderstatusState extends State<Senderstatus> {
                       children: [
                         const SizedBox(height: 10),
                         ElevatedButton.icon(
-                          onPressed: (orderData == null)
+                          onPressed:
+                              (orderData == null ||
+                                  orderData!['status'] == 1 ||
+                                  orderData!['status'] == 0)
                               ? null
                               : _showDriverInfo,
 
@@ -240,150 +228,84 @@ class _SenderstatusState extends State<Senderstatus> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (orderData!['status'] != 0 && orderData!['status'] != 1)
-              Row(
-                children: [
-                  SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 50),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: 10),
-                        Text(
-                          "ข้อมูลไรเดอร์",
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Color.fromARGB(255, 255, 187, 2),
-                            fontWeight: FontWeight.bold,
+            Row(
+              children: [
+                SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.only(left: 50),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 10),
+                      Text(
+                        "ข้อมูลไรเดอร์",
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Color.fromARGB(255, 255, 187, 2),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          ClipOval(
+                            child: dataRider?['profile'] != null
+                                ? Image.network(
+                                    dataRider?['profile'],
+                                    width: 50,
+                                    height: 50,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(
+                                    width: 50,
+                                    height: 50,
+                                    color: Colors.grey,
+                                    child: const Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                      size: 30,
+                                    ),
+                                  ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          children: [
-                            ClipOval(
-                              child: dataRider?['profile'] != null
-                                  ? Image.network(
-                                      dataRider?['profile'],
-                                      width: 50,
-                                      height: 50,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Container(
-                                      width: 50,
-                                      height: 50,
-                                      color: Colors.grey,
-                                      child: const Icon(
-                                        Icons.person,
-                                        color: Colors.white,
-                                        size: 30,
-                                      ),
-                                    ),
-                            ),
 
-                            const SizedBox(width: 10),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 40),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    dataRider?['riderName'],
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                          const SizedBox(width: 10),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 40),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "ชื่อ :${dataRider?['riderName']}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  Text(
-                                    dataRider?['riderPhone'],
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    dataRider?['vehicle_number'],
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 40, top: 20),
-              child: Column(
-                children: [
-                  Container(
-                    width: 300,
-                    height: 150,
-                    decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 241, 241, 241),
-                    ),
-                    child: Container(
-                      child: (image != null)
-                          ? Image.file(File(image!.path), fit: BoxFit.cover)
-                          : Center(
-                              child: GestureDetector(
-                                onTap: addImgByCamera,
-                                child: Icon(
-                                  Icons.camera_alt, // ไอคอนกล้อง
-                                  size: 30, // ขนาดไอคอน
-                                  color:
-                                      Colors.black, // สีไอคอน (ปรับตามต้องการ)
                                 ),
-                              ),
+                                Text(
+                                  "เบอร์โทรศัพท์ :${dataRider?['riderPhone']}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  "ทะเบียนรถ : ${dataRider?['vehicle_number']}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                    ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 50),
+                    ],
                   ),
-                  SizedBox(height: 10),
-                  if (orderData!['status'] == 0)
-                    Center(
-                      child: FilledButton(
-                        onPressed: updateStatus1,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: Color.fromARGB(255, 255, 187, 2),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10), // มุมโค้ง
-                          ),
-                        ),
-                        child: Text(
-                          "อัปเดต",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                  if (orderData!['status'] == 4)
-                    Container(
-                      width: 300,
-                      height: 150,
-                      decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 241, 241, 241),
-                      ),
-                      child: Container(
-                        child: (orderData!['imgStatus4'] != null)
-                            ? Image.network(
-                                orderData!['imgStatus4'],
-                                fit: BoxFit.cover,
-                              )
-                            : Center(child: GestureDetector(onTap: () {})),
-                      ),
-                    ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
@@ -395,7 +317,6 @@ class _SenderstatusState extends State<Senderstatus> {
     final docOrder = db.collection("orders").doc(widget.oid);
     var riderDoc = db.collection('riders');
     var addressDoc = db.collection('address');
-    var riderData;
     if (listener != null) {
       await listener!.cancel();
       listener = null;
@@ -404,7 +325,6 @@ class _SenderstatusState extends State<Senderstatus> {
     listener = docOrder.snapshots().listen((event) async {
       var data = event.data();
       var status = data?['status'];
-      var imgStatus4 = data?['image_status4'];
       var receiverAddress = data?['receiver_address_id'];
       var senderAddress = data?['sender_address_id'];
 
@@ -414,50 +334,54 @@ class _SenderstatusState extends State<Senderstatus> {
       var receiverAddressData = addressReceiver.data();
       var senderAddressData = addressSender.data();
 
-   
-
       setState(() {
         orderData = {
+          "rider_id": data?['rider_id'],
           "status": status,
-
           "latitudeReceiver": receiverAddressData!['latitude'],
           "longitudeReceiver": receiverAddressData!['longitude'],
           "latitudeSender": senderAddressData!['latitude'],
           "longitudeSender": senderAddressData!['longitude'],
-          if (imgStatus4 != null) "imgStatus4": imgStatus4,
         };
         activeStep = mapStatusToStep(orderData!['status']);
         log("orderData: $orderData");
       });
 
       if (status != 0 && status != 1) {
-        if (listenerRider != null) {
-          await listenerRider!.cancel();
-          listenerRider = null;
-        }
-        listenerRider = docOrder.snapshots().listen((event) async {
-          var data = event.data();
-          var riderId = data?['rider_id'];
 
-          if (riderId != null) {
-            var riderGet = await riderDoc.doc(riderId).get();
-            riderData = riderGet.data() ?? {};
-          }
-
-          setState(() {
-            dataRider = {
-              "riderName": riderData['name'] ?? '',
-              "riderPhone": riderData['phone'] ?? '',
-              "vehicle_number": riderData['vehicle_number'] ?? '',
-              "profile": riderData['profile_image'],
-              "latitudeRider": riderData['latitude'],
-              "longitudeRider": riderData['longitude'],
-            };
-            log("dataRider : $dataRider");
-          });
-        });
+        getLocation();
       }
     });
+  }
+
+  void getLocation() async {
+    var riderDoc = db.collection('riders').doc(orderData!['rider_id']);
+    if (listenerRider != null) {
+      await listenerRider!.cancel();
+      listenerRider = null;
+    }
+    listenerRider = riderDoc.snapshots().listen((event) {
+      var data = event.data();
+      var latitude = data?['latitude'];
+      var longitude = data?['longitude'];
+      var riderName = data?['name'];
+      var riderPhone = data?['phone'];
+      var vehicle_number = data?['vehicle_number'];
+      var profile = data?['profile_image'];
+
+      setState(() {
+        dataRider = {
+          'latitudeRider': latitude,
+          'longitudeRider': longitude,
+          "riderName": riderName,
+          "riderPhone": riderPhone,
+          "vehicle_number": vehicle_number,
+          "profile": profile,
+        };
+      });
+      log(dataRider.toString());
+      log("current data: ${event.data()}");
+    }, onError: (error) => log("Listen failed: $error"));
   }
 
   int mapStatusToStep(int status) {
@@ -472,72 +396,6 @@ class _SenderstatusState extends State<Senderstatus> {
         return 3; // ส่งสินค้าสำเร็จ
       default:
         return 0; // ค่า default
-    }
-  }
-
-  void addImgByCamera() async {
-    final picked = await picker.pickImage(source: ImageSource.camera);
-    if (picked == null) return;
-    image = File(picked.path);
-    setState(() {});
-  }
-
-  void updateStatus1() async {
-    try {
-      int status = 1;
-      var orderDoc = db.collection('orders').doc(widget.oid);
-
-      // ถ้ามีภาพจาก addImg() → อัปโหลดก่อน
-      if (image != null) {
-        imageUrl = await uploadToCloudinary(image!);
-        log("imageUrl : $imageUrl");
-        await orderDoc.update({'status': status, 'image_status1': imageUrl});
-      } else {
-        log("No image");
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('แจ้งเตือน'),
-            content: Text('กรุณาอัปโหลดรูปภาพเพื่ออัปเดตสถานะสินค้า'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('ปิด'),
-              ),
-            ],
-          ),
-        );
-      }
-    } catch (err) {
-      log(err.toString());
-    }
-  }
-
-  Future<String?> uploadToCloudinary(File imageFile) async {
-    try {
-      const cloudName = "dsz1hhnx4"; // Cloud name ของคุณ
-      const uploadPreset = "flutter_upload"; // ชื่อ preset ที่ตั้งใน Cloudinary
-
-      final url = Uri.parse(
-        "https://api.cloudinary.com/v1_1/$cloudName/image/upload",
-      );
-
-      var request = http.MultipartRequest("POST", url)
-        ..fields['upload_preset'] = uploadPreset
-        ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
-
-      var response = await request.send();
-      if (response.statusCode == 200) {
-        var responseData = await response.stream.bytesToString();
-        var jsonData = jsonDecode(responseData);
-        return jsonData['secure_url']; // ✅ ได้ URL กลับมา
-      } else {
-        print("Upload failed with status: ${response.statusCode}");
-        return null;
-      }
-    } catch (e) {
-      print("Upload error: $e");
-      return null;
     }
   }
 

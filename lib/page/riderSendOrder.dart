@@ -93,7 +93,7 @@ class _RidersendorderState extends State<Ridersendorder> {
                           height: 40,
                           child: Icon(
                             Icons.location_on,
-                            color: Colors.red,
+                            color: Colors.blue,
                             size: 40,
                           ),
                         ),
