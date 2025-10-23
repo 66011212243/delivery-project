@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:delivery/page/Product_details.dart';
 import 'package:delivery/page/senderStatus.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -124,7 +125,15 @@ class _ShippingState extends State<Shipping> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   ElevatedButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              Product_details(uid: widget.uid,orderId: order['order_id'],),
+                                        ),
+                                      );
+                                    },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.orange,
                                       foregroundColor: Colors.black,
