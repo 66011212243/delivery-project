@@ -75,7 +75,17 @@ class _HomepageriderState extends State<Homepagerider> {
 
             Expanded(
               child: isLoading
-                  ? Center(child: CircularProgressIndicator()) // Loader ขณะโหลด
+                  ? Center(child: CircularProgressIndicator())
+                  : orders.isEmpty
+                  ? Center(
+                      child: Text(
+                        'ไม่มีรายการ',
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 81, 81, 81),
+                          fontSize: 16,
+                        ),
+                      ),
+                    )
                   : ListView.builder(
                       itemCount: orders.length,
                       itemBuilder: (context, index) {

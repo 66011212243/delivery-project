@@ -128,7 +128,6 @@ class _HistoryUserState extends State<HistoryUser> {
         };
 
         tempOrders.add(fullOrder);
-    
       }
 
       // 6️อัปเดต state
@@ -172,6 +171,7 @@ class _HistoryUserState extends State<HistoryUser> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFFFDE10A),
+        automaticallyImplyLeading: false,
         title: const Text(
           "ประวัติการส่งสินค้า",
           style: TextStyle(color: Colors.black),
@@ -265,12 +265,14 @@ class _HistoryUserState extends State<HistoryUser> {
                                 child: ElevatedButton(
                                   onPressed: () {
                                     Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              Product_details(uid: widget.uid,orderId: order['order_id'],),
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Product_details(
+                                          uid: widget.uid,
+                                          orderId: order['order_id'],
                                         ),
-                                      );
+                                      ),
+                                    );
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.orange,

@@ -6,7 +6,6 @@ import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-
 class MapAddress extends StatefulWidget {
   final String uid;
   const MapAddress({super.key, required this.uid});
@@ -58,7 +57,7 @@ class _MapAddressState extends State<MapAddress> {
                       ? null
                       : () async {
                           final newAddress = {
-                            "uid": widget.uid,
+                            "user_id": widget.uid,
                             "address": selectedAddress,
                             "latitude": selectedLatLng!.latitude,
                             "longitude": selectedLatLng!.longitude,
@@ -78,8 +77,10 @@ class _MapAddressState extends State<MapAddress> {
                     ),
                     minimumSize: const Size(70, 70),
                   ),
-                  child:
-                      const Text("บันทึก", style: TextStyle(color: Colors.black)),
+                  child: const Text(
+                    "บันทึก",
+                    style: TextStyle(color: Colors.black),
+                  ),
                 ),
               ],
             ),
@@ -117,8 +118,11 @@ class _MapAddressState extends State<MapAddress> {
                         point: selectedLatLng!,
                         width: 40,
                         height: 40,
-                        child: const Icon(Icons.location_on,
-                            color: Colors.red, size: 40),
+                        child: const Icon(
+                          Icons.location_on,
+                          color: Colors.red,
+                          size: 40,
+                        ),
                       ),
                     ],
                   ),
@@ -131,20 +135,21 @@ class _MapAddressState extends State<MapAddress> {
   }
 
   Future<String> getAddressFromLatLng(LatLng? latLng) async {
-  if (latLng == null) return "ไม่พบพิกัด";
+    if (latLng == null) return "ไม่พบพิกัด";
 
-  try {
-    final placemarks =
-        await placemarkFromCoordinates(latLng.latitude, latLng.longitude);
-    if (placemarks.isNotEmpty) {
-      final place = placemarks.first;
-      return "${place.street ?? ''}, ${place.subLocality ?? ''}, ${place.locality ?? ''}"
-          .replaceAll(", ,", ",");
+    try {
+      final placemarks = await placemarkFromCoordinates(
+        latLng.latitude,
+        latLng.longitude,
+      );
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        return "${place.street ?? ''}, ${place.subLocality ?? ''}, ${place.locality ?? ''}"
+            .replaceAll(", ,", ",");
+      }
+      return "ไม่พบที่อยู่";
+    } catch (e) {
+      return "เกิดข้อผิดพลาด: $e";
     }
-    return "ไม่พบที่อยู่";
-  } catch (e) {
-    return "เกิดข้อผิดพลาด: $e";
   }
-}
-
 }

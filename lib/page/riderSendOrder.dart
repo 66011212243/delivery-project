@@ -45,7 +45,7 @@ class _RidersendorderState extends State<Ridersendorder> {
   void initState() {
     super.initState();
     startRealtime();
-    // updateLatLng();
+    updateLatLng();
   }
 
   @override
@@ -773,7 +773,7 @@ class _RidersendorderState extends State<Ridersendorder> {
   }
 
   void updateLatLng() {
-    Timer.periodic(Duration(seconds: 7), (timer) async {
+    Timer.periodic(Duration(seconds: 3), (timer) async {
       Position position = await _determinePosition();
       await db.collection('riders').doc(orderData!['rider_id']).update({
         'latitude': position.latitude,

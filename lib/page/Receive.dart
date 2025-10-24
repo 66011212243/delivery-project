@@ -32,6 +32,7 @@ class _ReceiveState extends State<Receive> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFFFDE10A),
+        automaticallyImplyLeading: false,
         title: const Text(
           "ที่ต้องได้รับ",
           style: TextStyle(color: Colors.black),
