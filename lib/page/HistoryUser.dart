@@ -179,7 +179,18 @@ class _HistoryUserState extends State<HistoryUser> {
         iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+           ? const Center(child: CircularProgressIndicator())
+    : (orders == null || orders.isEmpty)
+        ? const Center(
+            child: Text(
+              'ไม่มีข้อมูล',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          )
           : Padding(
               padding: const EdgeInsets.all(16),
               child: ListView.builder(
