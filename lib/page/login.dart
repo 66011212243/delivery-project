@@ -193,7 +193,12 @@ class _LoginPageState extends State<LoginPage> {
                       const Text("ยังไม่ได้สมัคร SnapSend? "),
                       GestureDetector(
                         onTap: () {
-                          //  ไปหน้า Register
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const Registerusers(),
+                            ),
+                          );
                         },
                         child: Text(
                           "ลงทะเบียน",

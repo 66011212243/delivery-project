@@ -127,6 +127,8 @@ void getOrder() async {
     }
     return null;
   }
+  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,12 +147,14 @@ void getOrder() async {
           child: const TextField(
             decoration: InputDecoration(
               prefixIcon: Icon(Icons.search),
-              hintText: "หมายเลขโทรศัพท์หรือที่อยู่",
+              hintText: "หมายเลขโทรศัพท์",
               border: InputBorder.none, //ลบขอบค้นหา
               contentPadding: EdgeInsets.symmetric(vertical: 10), //9exsoj'8hosk
             ),
           ),
+          
         ),
+        
       ),
 
 
@@ -158,7 +162,7 @@ void getOrder() async {
   padding: const EdgeInsets.all(16),
   child: Column(
     children: [
-      // 🔹 ปุ่ม 2 ปุ่มด้านบน
+      // ปุ่ม 2 ปุ่มด้านบน
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -211,10 +215,22 @@ void getOrder() async {
 
       const SizedBox(height: 24),
 
-      // 🔹 แสดงรายการออเดอร์เรียงลงด้านล่าง (scroll ได้)
+      // แสดงรายการออเดอร์เรียงลงด้านล่าง (scroll ได้)
       Expanded(
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
+          child: isLoading
+      ? const Center(child: CircularProgressIndicator())
+      : orders.isEmpty
+          ? const Center(
+              child: Text(
+                'ไม่มีข้อมูล',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+
             : ListView.builder(
                 itemCount: orders.length,
                 itemBuilder: (context, index) {
@@ -342,15 +358,6 @@ void getOrder() async {
     ],
   ),
 ),
-
-
-              
-
-         
-          
-    
-      
-
 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
