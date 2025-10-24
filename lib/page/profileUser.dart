@@ -1,9 +1,11 @@
 import 'package:delivery/page/AddressPage.dart';
 import 'package:delivery/page/homepageRider.dart';
+import 'package:delivery/page/login.dart';
 import 'package:delivery/page/mapAddress.dart';
 import 'package:delivery/page/Receive.dart';
 import 'package:delivery/page/homepageRider.dart';
 import 'package:delivery/page/homepageUser.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delivery/page/HistoryUser.dart';
@@ -81,7 +83,7 @@ class _ProfileuserState extends State<Profileuser> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.yellow,
-        leading: const BackButton(color: Colors.black),
+        automaticallyImplyLeading: false,
         title: const Text('โปรไฟล์'),
       ),
 
@@ -205,7 +207,8 @@ class _ProfileuserState extends State<Profileuser> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => AddressPage(uid: widget.uid),
+                                      builder: (context) =>
+                                          AddressPage(uid: widget.uid),
                                     ),
                                   );
                                 },
@@ -221,6 +224,55 @@ class _ProfileuserState extends State<Profileuser> {
                               // --- ส่วนที่อยู่ถูกลบออกไปแล้ว ---
                             ],
                           ),
+                        ),
+                        Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 150),
+                              child: FilledButton(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: Colors.yellow,
+                                  foregroundColor: Colors.black,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                    horizontal: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  try {
+                                    await FirebaseAuth.instance
+                                        .signOut(); // ออกจากระบบ Firebase
+                                    if (!mounted) return;
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Login(),
+                                      ),
+                                      (route) =>
+                                          false, // ล้างทุกหน้าออกจาก stack
+                                    );
+                                  } catch (e) {
+                                    print("Error signing out: $e");
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text("ออกจากระบบไม่สำเร็จ"),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: const Text(
+                                  "ออกจากระบบ",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

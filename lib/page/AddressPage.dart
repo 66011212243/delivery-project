@@ -23,7 +23,7 @@ class _AddressPageState extends State<AddressPage> {
   Future<void> loadAddressFromFirestore() async {
     final snapshot = await FirebaseFirestore.instance
         .collection('address')
-        .where('uid', isEqualTo: widget.uid)
+        .where('user_id', isEqualTo: widget.uid)
         .get();
 
     setState(() {
@@ -41,7 +41,7 @@ class _AddressPageState extends State<AddressPage> {
   Future<void> saveAddressToFirestore(Map<String, dynamic> data) async {
     // บันทึก
     await FirebaseFirestore.instance.collection('address').add({
-      "uid": widget.uid,
+      "user_id": widget.uid,
       "address": data['address'],
       "latitude": data['latLng'].latitude,
       "longitude": data['latLng'].longitude,

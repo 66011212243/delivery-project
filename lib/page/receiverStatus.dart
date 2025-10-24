@@ -348,7 +348,6 @@ class _ReceiverstatusState extends State<Receiverstatus> {
       });
 
       if (status != 0 && status != 1) {
-
         getLocation();
       }
     });

@@ -395,7 +395,6 @@ class _SenderstatusState extends State<Senderstatus> {
     final docOrder = db.collection("orders").doc(widget.oid);
     var riderDoc = db.collection('riders');
     var addressDoc = db.collection('address');
-    var riderData;
     if (listener != null) {
       await listener!.cancel();
       listener = null;
@@ -414,12 +413,10 @@ class _SenderstatusState extends State<Senderstatus> {
       var receiverAddressData = addressReceiver.data();
       var senderAddressData = addressSender.data();
 
-   
-
       setState(() {
         orderData = {
           "status": status,
-
+          "rider_id": data?['rider_id'],
           "latitudeReceiver": receiverAddressData!['latitude'],
           "longitudeReceiver": receiverAddressData!['longitude'],
           "latitudeSender": senderAddressData!['latitude'],
@@ -431,33 +428,39 @@ class _SenderstatusState extends State<Senderstatus> {
       });
 
       if (status != 0 && status != 1) {
-        if (listenerRider != null) {
-          await listenerRider!.cancel();
-          listenerRider = null;
-        }
-        listenerRider = docOrder.snapshots().listen((event) async {
-          var data = event.data();
-          var riderId = data?['rider_id'];
-
-          if (riderId != null) {
-            var riderGet = await riderDoc.doc(riderId).get();
-            riderData = riderGet.data() ?? {};
-          }
-
-          setState(() {
-            dataRider = {
-              "riderName": riderData['name'] ?? '',
-              "riderPhone": riderData['phone'] ?? '',
-              "vehicle_number": riderData['vehicle_number'] ?? '',
-              "profile": riderData['profile_image'],
-              "latitudeRider": riderData['latitude'],
-              "longitudeRider": riderData['longitude'],
-            };
-            log("dataRider : $dataRider");
-          });
-        });
+        getLocation();
       }
     });
+  }
+
+  void getLocation() async {
+    var riderDoc = db.collection('riders').doc(orderData!['rider_id']);
+    if (listenerRider != null) {
+      await listenerRider!.cancel();
+      listenerRider = null;
+    }
+    listenerRider = riderDoc.snapshots().listen((event) {
+      var data = event.data();
+      var latitude = data?['latitude'];
+      var longitude = data?['longitude'];
+      var riderName = data?['name'];
+      var riderPhone = data?['phone'];
+      var vehicle_number = data?['vehicle_number'];
+      var profile = data?['profile_image'];
+
+      setState(() {
+        dataRider = {
+          'latitudeRider': latitude,
+          'longitudeRider': longitude,
+          "riderName": riderName,
+          "riderPhone": riderPhone,
+          "vehicle_number": vehicle_number,
+          "profile": profile,
+        };
+      });
+      log(dataRider.toString());
+      log("current data: ${event.data()}");
+    }, onError: (error) => log("Listen failed: $error"));
   }
 
   int mapStatusToStep(int status) {
