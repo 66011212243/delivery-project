@@ -181,7 +181,7 @@ class _ShippingState extends State<Shipping> {
                                               ),
                                               child: const Text("รายละเอียด"),
                                             ),
-                                            const SizedBox(width: 16),
+                                            const SizedBox(width: 13),
                                             ElevatedButton(
                                               onPressed: () {
                                                 Navigator.push(

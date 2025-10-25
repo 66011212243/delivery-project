@@ -186,22 +186,27 @@ class _ProfileuserState extends State<Profileuser> {
                               ),
                               Container(
                                 width: 340,
-                                height: 50,
                                 decoration: BoxDecoration(
-                                  color: Color.fromARGB(255, 241, 241, 241),
+                                  color: const Color.fromARGB(
+                                    255,
+                                    241,
+                                    241,
+                                    241,
+                                  ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 20),
-                                    child: Text(
-                                      address ?? '-',
-                                      style: TextStyle(fontSize: 18),
-                                    ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    address ?? '-',
+                                    style: const TextStyle(fontSize: 18),
+                                    softWrap: true, // ✅ ให้ตัดบรรทัดอัตโนมัติ
+                                    overflow: TextOverflow
+                                        .visible, // ✅ ให้ข้อความยืดได้ถ้ายาว
                                   ),
                                 ),
                               ),
+                              
                               TextButton(
                                 onPressed: () {
                                   Navigator.push(

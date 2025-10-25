@@ -32,7 +32,7 @@ class _HomePageUserState extends State<HomePageUser> {
     Center(child: Text('อื่นๆ')),
   ];
 
-   var db = FirebaseFirestore.instance;
+  var db = FirebaseFirestore.instance;
   StreamSubscription? listenerShipping;
   List<Map<String, dynamic>> orders = [];
   bool isLoading = true;
@@ -43,7 +43,7 @@ class _HomePageUserState extends State<HomePageUser> {
     getOrder();
   }
 
-void getOrder() async {
+  void getOrder() async {
     setState(() {
       isLoading = true; // เริ่มโหลด
     });
@@ -107,6 +107,7 @@ void getOrder() async {
       log("Shipping => $orders");
     });
   }
+
   Future<String?> getAddressFromLatLng(
     double latitude,
     double longitude,
@@ -127,7 +128,6 @@ void getOrder() async {
     }
     return null;
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -152,212 +152,221 @@ void getOrder() async {
               contentPadding: EdgeInsets.symmetric(vertical: 10), //9exsoj'8hosk
             ),
           ),
-          
         ),
-        
       ),
-
 
       body: Padding(
-  padding: const EdgeInsets.all(16),
-  child: Column(
-    children: [
-      // ปุ่ม 2 ปุ่มด้านบน
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              side: const BorderSide(color: Colors.grey),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CreateOrderPage(uid: widget.uid),
-                ),
-              );
-            },
-            icon: const Icon(Icons.local_shipping, color: Colors.yellow),
-            label: const Text("ส่งสินค้า"),
-          ),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              side: const BorderSide(color: Colors.grey),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Shipping(uid: widget.uid),
-                ),
-              );
-            },
-            icon: const Icon(Icons.inventory, color: Colors.yellow),
-            label: const Text("ดูสินค้าที่กำลังส่ง"),
-          ),
-        ],
-      ),
-
-      const SizedBox(height: 24),
-
-      // แสดงรายการออเดอร์เรียงลงด้านล่าง (scroll ได้)
-      Expanded(
-          child: isLoading
-      ? const Center(child: CircularProgressIndicator())
-      : orders.isEmpty
-          ? const Center(
-              child: Text(
-                'ไม่มีข้อมูล',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            )
-
-            : ListView.builder(
-                itemCount: orders.length,
-                itemBuilder: (context, index) {
-                  final order = orders[index];
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 24),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // ปุ่ม 2 ปุ่มด้านบน
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    side: const BorderSide(color: Colors.grey),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
                     ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 25),
-                          child: Image.asset(
-                            'assets/images/logo_delivery.jpg',
-                            width: 60,
-                            height: 60,
-                          ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CreateOrderPage(uid: widget.uid),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.local_shipping, color: Colors.yellow),
+                  label: const Text("ส่งสินค้า"),
+                ),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    side: const BorderSide(color: Colors.grey),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Shipping(uid: widget.uid),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.inventory, color: Colors.yellow),
+                  label: const Text("ดูสินค้าที่กำลังส่ง"),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // แสดงรายการออเดอร์เรียงลงด้านล่าง (scroll ได้)
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : orders.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'ไม่มีข้อมูล',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.location_on,
-                                      color: Colors.red, size: 20),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    order['receiver_address'] ?? '',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 20),
-                                child: Text(
-                                  'ชื่อผู้รับ : ${order['receiverName'] ?? ''}',
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  const Icon(Icons.location_on,
-                                      color: Colors.green, size: 20),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    order['sender_address'] ?? '',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 20),
-                                child: Text(
-                                  'ชื่อผู้ส่ง : ${order['senderName'] ?? ''}',
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => Product_details(
-                                            uid: widget.uid,
-                                            orderId: order['order_id'],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.orange,
-                                      foregroundColor: Colors.black,
-                                    ),
-                                    child: const Text("รายละเอียด"),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => Senderstatus(
-                                            oid: order['order_id'],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.orange,
-                                      foregroundColor: Colors.black,
-                                    ),
-                                    child: const Text("สถานะ"),
-                                  ),
-                                ],
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: orders.length,
+                      itemBuilder: (context, index) {
+                        final order = orders[index];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 24),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.3),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                        ),
-                      ],
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right: 25),
+                                child: Image.asset(
+                                  'assets/images/logo_delivery.jpg',
+                                  width: 60,
+                                  height: 60,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.location_on,
+                                          color: Colors.red,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          order['receiver_address'] ?? '',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 20),
+                                      child: Text(
+                                        'ชื่อผู้รับ : ${order['receiverName'] ?? ''}',
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.location_on,
+                                          color: Colors.green,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          order['sender_address'] ?? '',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 20),
+                                      child: Text(
+                                        'ชื่อผู้ส่ง : ${order['senderName'] ?? ''}',
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Row(
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    Product_details(
+                                                      uid: widget.uid,
+                                                      orderId:
+                                                          order['order_id'],
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.orange,
+                                            foregroundColor: Colors.black,
+                                          ),
+                                          child: const Text("รายละเอียด"),
+                                        ),
+                                        const SizedBox(width: 13),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    Senderstatus(
+                                                      oid: order['order_id'],
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.orange,
+                                            foregroundColor: Colors.black,
+                                          ),
+                                          child: const Text("สถานะ"),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
+            ),
+          ],
+        ),
       ),
-    ],
-  ),
-),
 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
