@@ -6,6 +6,7 @@ import 'package:delivery/page/Product_details.dart';
 import 'package:delivery/page/Shipping.dart';
 import 'package:delivery/page/senderStatus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
 import 'dart:async';
 import 'dart:developer';
@@ -13,6 +14,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
 
 class HomePageUser extends StatefulWidget {
   String uid = '';
@@ -442,17 +444,25 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
   List<Map<String, dynamic>> addresses = [];
 
   Map<String, dynamic>? userData;
+
+  LatLng? selectedLatLng;
+  final mapController = MapController();
+
+  bool isLoading = false;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFFDE10A),
-        title: const Text(
-          "สร้างรายการส่งสินค้าใหม่",
-          style: TextStyle(color: Colors.black),
-        ), //textbar
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
+    return Stack(
+       children: [
+      Scaffold(
+          appBar: AppBar(
+            backgroundColor: const Color(0xFFFDE10A),
+            title: const Text(
+              "สร้างรายการส่งสินค้าใหม่",
+              style: TextStyle(color: Colors.black),
+            ),
+            iconTheme: const IconThemeData(color: Colors.black),
+          ),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -625,17 +635,82 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
                           label: address,
                         );
                       }).toList(),
-                      onSelected: (value) {
+                      onSelected: (value) async {
                         setState(() {
                           selectedAddress = value;
-                          log(selectedAddress.toString());
                         });
+
+                        // หาข้อมูล lat/lng จาก address ที่เลือก
+                        var selected = addresses.firstWhere(
+                          (addr) => addr['id'] == value,
+                          orElse: () => <String, dynamic>{},
+                        );
+
+                        if (selected.isNotEmpty) {
+                          double lat = 0.0;
+                          double lng = 0.0;
+
+                          if (selected['latitude'] is GeoPoint) {
+                            lat = (selected['latitude'] as GeoPoint).latitude;
+                            lng = (selected['latitude'] as GeoPoint).longitude;
+                          } else {
+                            lat = (selected['latitude'] ?? 0.0).toDouble();
+                            lng = (selected['longitude'] ?? 0.0).toDouble();
+                          }
+
+                          setState(() {
+                            selectedLatLng = LatLng(lat, lng);
+                          });
+
+                          if (selectedLatLng != null) {
+                            mapController.move(selectedLatLng!, 15.0);
+                          }
+                        }
                       },
                     ),
                   ),
                 ],
               ),
             const SizedBox(height: 24),
+
+            if (selectedLatLng != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 300,
+                  child: FlutterMap(
+                    mapController: mapController,
+                    options: MapOptions(
+                      initialCenter:
+                          selectedLatLng ?? LatLng(16.246373, 103.251827),
+                      initialZoom: 15.0,
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            'https://tile.thunderforest.com/atlas/{z}/{x}/{y}.png?apikey=1ef19f91909b4ac1ad3dfb1dc523a2c6',
+                        userAgentPackageName: 'com.example.delivery',
+                      ),
+                      if (selectedLatLng != null)
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              point: selectedLatLng!,
+                              width: 40,
+                              height: 40,
+                              child: const Icon(
+                                Icons.location_on,
+                                color: Colors.red,
+                                size: 40,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+              ),
 
             // Submit Button
             Padding(
@@ -649,7 +724,17 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    onPressed: addData,
+                    onPressed: () async {
+                      setState(() {
+                        isLoading = true; // เริ่มโหลด
+                      });
+
+                      await addData();
+
+                      setState(() {
+                        isLoading = false; // โหลดเสร็จ
+                      });
+                    },
                     child: const Text("ส่งสินค้า"),
                   ),
                 ),
@@ -658,8 +743,22 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
           ],
         ),
       ),
+      ),
+    
+  
+  // Overlay Loading
+        if (isLoading)
+          Container(
+            color: Colors.black54,
+            child: const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+          ),
+      ],
     );
   }
+
+  
 
   void addImg() async {
     final picked = await picker.pickImage(source: ImageSource.gallery);
@@ -693,7 +792,7 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
       if (response.statusCode == 200) {
         var responseData = await response.stream.bytesToString();
         var jsonData = jsonDecode(responseData);
-        return jsonData['secure_url']; // ✅ ได้ URL กลับมา
+        return jsonData['secure_url']; //  ได้ URL กลับมา
       } else {
         print("Upload failed with status: ${response.statusCode}");
         return null;
@@ -783,9 +882,10 @@ class _CreateOrderPageState extends State<CreateOrderPage> {
         'createdAt': DateTime.now(),
       };
 
-      log(data.toString());
       await docOrder.set(data);
-      log("${docOrder.id} สร้างสำเร็จ");
+
+      // 3️⃣ ปิด Dialog หลังบันทึกเสร็จ
+      if (Navigator.canPop(context)) Navigator.pop(context);
 
       Navigator.pushReplacement(
         context,
