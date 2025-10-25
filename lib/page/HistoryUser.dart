@@ -245,9 +245,11 @@ class _HistoryUserState extends State<HistoryUser> {
                                 padding: const EdgeInsets.only(left: 20),
                                 child: Text(
                                   'ชื่อผู้รับ : ${order['receiverName'] ?? '-'}',
+                                  
                                 ),
                               ),
                               const SizedBox(height: 8),
+                              
                               Row(
                                 children: [
                                   Icon(

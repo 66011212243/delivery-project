@@ -129,8 +129,10 @@ class _ShippingState extends State<Shipping> {
                                           ),
                                           child: Text(
                                             'ชื่อผู้รับ : ${order['receiverName']}',
+                                            style: TextStyle(fontSize: 16),
                                           ),
                                         ),
+                                       
                                         const SizedBox(height: 8),
                                         Row(
                                           children: [
@@ -156,6 +158,7 @@ class _ShippingState extends State<Shipping> {
                                             'ชื่อผู้ส่ง : ${order['senderName']}',
                                           ),
                                         ),
+                                         
                                         const SizedBox(height: 16),
                                         Row(
                                           mainAxisAlignment:
@@ -270,6 +273,7 @@ class _ShippingState extends State<Shipping> {
           "orderImg": data['order_image'],
           "senderName": senderData!['name'],
           "sender_address": senderAddressString,
+          "phoneUser":senderData!['phone'],
 
           "receiverName": receiverData!['name'],
           "receiver_address": receiverAddressString,

@@ -1,10 +1,13 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 class Product_details extends StatefulWidget {
   final String uid;
-  final String orderId; // รับ orderId
+  final String orderId;
 
   const Product_details({
     super.key,
@@ -17,6 +20,10 @@ class Product_details extends StatefulWidget {
 }
 
 class _Product_detailsState extends State<Product_details> {
+  LatLng? senderLatLng;
+  LatLng? receiverLatLng;
+  final MapController mapController = MapController();
+
   String senderName = '';
   String receiverName = '';
   String senderImage = '';
@@ -25,12 +32,14 @@ class _Product_detailsState extends State<Product_details> {
   String receiverAddress = '';
   String details = '';
   String order_image = '';
+  String senderphone = '';
+  String receiverphone = '';
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    fetchOrderById(); // เรียกข้อมูล order
+    fetchOrderById();
   }
 
   Future<void> fetchOrderById() async {
@@ -39,7 +48,6 @@ class _Product_detailsState extends State<Product_details> {
     });
 
     try {
-      // ดึง order ตาม orderId
       final doc = await FirebaseFirestore.instance
           .collection("orders")
           .doc(widget.orderId)
@@ -52,7 +60,6 @@ class _Product_detailsState extends State<Product_details> {
 
       final data = doc.data() as Map<String, dynamic>;
 
-      // ดึงข้อมูล user และ address
       final usersSnapshot =
           await FirebaseFirestore.instance.collection("users").get();
       final addressSnapshot =
@@ -72,25 +79,38 @@ class _Product_detailsState extends State<Product_details> {
       var senderAddressData = addressMap[data['sender_address_id']];
       var receiverAddressData = addressMap[data['receiver_address_id']];
 
-      var senderAddressString = senderAddressData != null
-          ? await getAddressFromLatLng(
-              senderAddressData['latitude'], senderAddressData['longitude'])
-          : "-";
+      LatLng? newSenderLatLng;
+      LatLng? newReceiverLatLng;
+      String senderAddressString = '-';
+      String receiverAddressString = '-';
 
-      var receiverAddressString = receiverAddressData != null
-          ? await getAddressFromLatLng(
-              receiverAddressData['latitude'], receiverAddressData['longitude'])
-          : "-";
+      if (senderAddressData != null) {
+        double lat = senderAddressData['latitude'];
+        double lon = senderAddressData['longitude'];
+        newSenderLatLng = LatLng(lat, lon);
+        senderAddressString = await getAddressFromLatLng(lat, lon);
+      }
+
+      if (receiverAddressData != null) {
+        double lat = receiverAddressData['latitude'];
+        double lon = receiverAddressData['longitude'];
+        newReceiverLatLng = LatLng(lat, lon);
+        receiverAddressString = await getAddressFromLatLng(lat, lon);
+      }
 
       setState(() {
         senderName = senderData?['name'] ?? '-';
+        senderphone = senderData?['phone'] ?? '-';
         receiverName = receiverData?['name'] ?? '-';
+        receiverphone = receiverData?['phone'] ?? '-';
         senderImage = senderData?['profile_image'] ?? '';
         receiverImage = receiverData?['profile_image'] ?? '';
         details = data['details'] ?? '-';
         order_image = data['order_image'] ?? '';
         senderAddress = senderAddressString;
         receiverAddress = receiverAddressString;
+        senderLatLng = newSenderLatLng;
+        receiverLatLng = newReceiverLatLng;
         isLoading = false;
       });
     } catch (e) {
@@ -101,7 +121,6 @@ class _Product_detailsState extends State<Product_details> {
     }
   }
 
-  // เพิ่มเมธอด getAddressFromLatLng
   Future<String> getAddressFromLatLng(double latitude, double longitude) async {
     try {
       List<Placemark> placemarks =
@@ -138,18 +157,19 @@ class _Product_detailsState extends State<Product_details> {
         leading: const BackButton(color: Colors.black),
         title: const Text('รายการสินค้าที่กำลังจัดส่ง'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // --- ผู้ส่งและผู้รับ ---
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Column(
                   children: [
                     CircleAvatar(
-                      radius: 60,
+                      radius: 50,
                       backgroundColor: Colors.yellow,
                       foregroundImage: senderImage.isNotEmpty
                           ? NetworkImage(senderImage)
@@ -158,13 +178,14 @@ class _Product_detailsState extends State<Product_details> {
                     ),
                     const SizedBox(height: 8),
                     Text('ชื่อผู้ส่ง: $senderName'),
+                    Text('เบอร์: $senderphone'),
                   ],
                 ),
-                const Icon(Icons.arrow_forward, size: 32),
+                const Icon(Icons.arrow_forward, size: 30),
                 Column(
                   children: [
                     CircleAvatar(
-                      radius: 60,
+                      radius: 50,
                       backgroundColor: Colors.yellow,
                       foregroundImage: receiverImage.isNotEmpty
                           ? NetworkImage(receiverImage)
@@ -173,11 +194,15 @@ class _Product_detailsState extends State<Product_details> {
                     ),
                     const SizedBox(height: 8),
                     Text('ชื่อผู้รับ: $receiverName'),
+                    Text('เบอร์: $receiverphone'),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 40),
+
+            const SizedBox(height: 30),
+
+            // --- รายละเอียดสินค้า ---
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -207,20 +232,15 @@ class _Product_detailsState extends State<Product_details> {
                           ? NetworkImage(order_image)
                           : const AssetImage('assets/images/box.png')
                               as ImageProvider,
-                      width: double.infinity,
-                      height: double.infinity,
                       fit: BoxFit.cover,
-                      alignment: Alignment.center,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'รายละเอียด',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
+                      const Text('รายละเอียด',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 4),
                       Text(details),
                     ],
@@ -228,6 +248,56 @@ class _Product_detailsState extends State<Product_details> {
                 ],
               ),
             ),
+
+            const SizedBox(height: 30),
+
+            // --- แผนที่ ---
+            if (senderLatLng != null && receiverLatLng != null)
+              SizedBox(
+                width: double.infinity,
+                height: 300,
+                child: FlutterMap(
+                  mapController: mapController,
+                  options: MapOptions(
+                     initialCenter: LatLng(
+                      (senderLatLng!.latitude + receiverLatLng!.latitude) / 2,
+                      (senderLatLng!.longitude + receiverLatLng!.longitude) / 2,
+                    ),
+                   initialZoom: 13.0,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.example.delivery',
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: senderLatLng!,
+                          width: 40,
+                          height: 40,
+                          child: const Icon(
+                            Icons.location_on,
+                            color: Colors.blue,
+                            size: 40,
+                          ),
+                        ),
+                        Marker(
+                          point: receiverLatLng!,
+                          width: 40,
+                          height: 40,
+                          child: const Icon(
+                            Icons.location_on,
+                            color: Colors.red,
+                            size: 40,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delivery/page/HistoryUser.dart';
+import 'package:delivery/page/Product_details.dart';
 import 'package:delivery/page/coordinatesReceive.dart';
 import 'package:delivery/page/homepageUser.dart';
 import 'package:delivery/page/profileUser.dart';
@@ -133,34 +134,63 @@ class _ReceiveState extends State<Receive> {
                                     const SizedBox(height: 4),
                                     Text(order['details']),
                                     const SizedBox(height: 8),
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  Receiverstatus(
-                                                    oid: order['order_id'],
-                                                  ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    Product_details(
+                                                      uid: widget.uid,
+                                                      orderId:
+                                                          order['order_id'],
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.orange,
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
                                             ),
-                                          );
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.orange,
-                                          foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              15,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(15),
                                             ),
                                           ),
+                                          child: const Text("รายละเอียด"),
                                         ),
-                                        child: const Text("ดูพิกัดไรเดอร์"),
-                                      ),
+                                        const SizedBox(width: 8),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    Receiverstatus(
+                                                      oid: order['order_id'],
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.orange,
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(15),
+                                            ),
+                                          ),
+                                          child: const Text("ดูพิกัดไรเดอร์"),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
