@@ -336,7 +336,7 @@ class _HomePageUserState extends State<HomePageUser> {
                                           ),
                                           child: const Text("รายละเอียด"),
                                         ),
-                                        const SizedBox(width: 16),
+                                        const SizedBox(width: 13),
                                         ElevatedButton(
                                           onPressed: () {
                                             Navigator.push(
