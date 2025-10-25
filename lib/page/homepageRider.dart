@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delivery/page/profileRider.dart';
 import 'package:delivery/page/riderSendOrder.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -21,6 +22,7 @@ class _HomepageriderState extends State<Homepagerider> {
   StreamSubscription? listener;
   List<Map<String, dynamic>> orders = [];
   bool isLoading = true;
+  final mapController = MapController();
   @override
   void initState() {
     super.initState();
@@ -90,120 +92,163 @@ class _HomepageriderState extends State<Homepagerider> {
                       itemCount: orders.length,
                       itemBuilder: (context, index) {
                         final order = orders[index];
-                        return SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Center(
-                                child: Column(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        top: 20,
-                                        bottom: 25,
-                                      ),
-                                      child: Container(
-                                        width: 320,
-                                        height: 270,
-                                        decoration: BoxDecoration(
-                                          color: const Color.fromARGB(
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Center(
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 20,
+                                      bottom: 25,
+                                    ),
+                                    child: Container(
+                                      width: 320,
+                                      height: 350,
+                                      decoration: BoxDecoration(
+                                        color: const Color.fromARGB(
+                                          255,
+                                          255,
+                                          255,
+                                          255,
+                                        ),
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(16),
+                                        ),
+                                        border: Border.all(
+                                          color: Color.fromARGB(
                                             255,
-                                            255,
-                                            255,
-                                            255,
-                                          ),
-                                          borderRadius: BorderRadius.all(
-                                            Radius.circular(16),
-                                          ),
-                                          border: Border.all(
-                                            color: Color.fromARGB(
-                                              255,
-                                              110,
-                                              109,
-                                              109,
-                                            ),
+                                            110,
+                                            109,
+                                            109,
                                           ),
                                         ),
+                                      ),
 
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(20.0),
-                                          child: Column(
-                                            children: [
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                  bottom: 12,
-                                                ),
-                                                child: Row(
-                                                  children: [
-                                                    Container(
-                                                      width: 50,
-                                                      height: 50,
-                                                      decoration: BoxDecoration(
-                                                        shape: BoxShape.circle,
-                                                        color:
-                                                            order['senderImage'] ==
-                                                                    null ||
-                                                                order['senderImage']
-                                                                    .isEmpty
-                                                            ? Colors.grey[400]
-                                                            : null,
-                                                        image:
-                                                            order['senderImage'] !=
-                                                                    null &&
-                                                                order['senderImage']
-                                                                    .isNotEmpty
-                                                            ? DecorationImage(
-                                                                image: NetworkImage(
-                                                                  order['senderImage'],
-                                                                ),
-                                                                fit: BoxFit
-                                                                    .cover,
-                                                              )
-                                                            : null,
-                                                      ),
-                                                    ),
-                                                    Container(
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets.only(
-                                                                  left: 20,
-                                                                ),
-                                                            child: Text(
-                                                              order['senderName'],
-                                                              style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets.only(
-                                                                  left: 20,
-                                                                ),
-                                                            child: Text(
-                                                              order['senderPhone'],
-                                                              style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20.0),
+                                        child: Column(
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                bottom: 12,
                                               ),
+                                              child: Row(
+                                                children: [
+                                                  Container(
+                                                    width: 50,
+                                                    height: 50,
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      color:
+                                                          order['senderImage'] ==
+                                                                  null ||
+                                                              order['senderImage']
+                                                                  .isEmpty
+                                                          ? Colors.grey[400]
+                                                          : null,
+                                                      image:
+                                                          order['senderImage'] !=
+                                                                  null &&
+                                                              order['senderImage']
+                                                                  .isNotEmpty
+                                                          ? DecorationImage(
+                                                              image: NetworkImage(
+                                                                order['senderImage'],
+                                                              ),
+                                                              fit: BoxFit.cover,
+                                                            )
+                                                          : null,
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                left: 20,
+                                                              ),
+                                                          child: Text(
+                                                            order['senderName'],
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                left: 20,
+                                                              ),
+                                                          child: Text(
+                                                            order['senderPhone'],
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
 
-                                              Row(
+                                            Row(
+                                              children: [
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        right: 30,
+                                                      ),
+                                                  child: Container(
+                                                    child: Image.asset(
+                                                      'assets/images/box.png',
+                                                      width: 40,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  child: Text(
+                                                    order['sender_address'],
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                right: 230,
+                                                bottom: 10,
+                                              ),
+                                              child: Container(
+                                                width:
+                                                    2, // ความกว้างเต็ม parent
+                                                height: 30, // ความหนา
+                                                color: Colors.black,
+                                              ),
+                                            ),
+
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                left: 10,
+                                                bottom: 15,
+                                              ),
+                                              child: Row(
                                                 children: [
                                                   Padding(
                                                     padding:
@@ -212,14 +257,14 @@ class _HomepageriderState extends State<Homepagerider> {
                                                         ),
                                                     child: Container(
                                                       child: Image.asset(
-                                                        'assets/images/box.png',
-                                                        width: 40,
+                                                        'assets/images/pin_images.png',
+                                                        width: 30,
                                                       ),
                                                     ),
                                                   ),
                                                   Container(
                                                     child: Text(
-                                                      order['sender_address'],
+                                                      order['receiver_address'],
                                                       style: TextStyle(
                                                         fontSize: 16,
                                                         fontWeight:
@@ -229,104 +274,248 @@ class _HomepageriderState extends State<Homepagerider> {
                                                   ),
                                                 ],
                                               ),
+                                            ),
 
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                  right: 230,
-                                                  bottom: 10,
-                                                ),
-                                                child: Container(
-                                                  width:
-                                                      2, // ความกว้างเต็ม parent
-                                                  height: 30, // ความหนา
-                                                  color: Colors.black,
-                                                ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                bottom: 12,
                                               ),
-
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                  left: 10,
-                                                  bottom: 15,
-                                                ),
-                                                child: Row(
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                            right: 30,
-                                                          ),
-                                                      child: Container(
-                                                        child: Image.asset(
-                                                          'assets/images/pin_images.png',
-                                                          width: 30,
-                                                        ),
-                                                      ),
+                                              child: Row(
+                                                children: [
+                                                  Container(
+                                                    width: 50,
+                                                    height: 50,
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      color:
+                                                          order['receiverImage'] ==
+                                                                  null ||
+                                                              order['receiverImage']
+                                                                  .isEmpty
+                                                          ? Colors.grey[400]
+                                                          : null,
+                                                      image:
+                                                          order['senderImage'] !=
+                                                                  null &&
+                                                              order['receiverImage']
+                                                                  .isNotEmpty
+                                                          ? DecorationImage(
+                                                              image: NetworkImage(
+                                                                order['receiverImage'],
+                                                              ),
+                                                              fit: BoxFit.cover,
+                                                            )
+                                                          : null,
                                                     ),
-                                                    Container(
-                                                      child: Text(
-                                                        order['receiver_address'],
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              Center(
-                                                child: FilledButton(
-                                                  onPressed: () async {
-                                                    await acceptOrder(
-                                                      order['order_id'],
-                                                      widget.rid,
-                                                    );
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            Ridersendorder(
-                                                              order_id:
-                                                                  order['order_id'],
+                                                  ),
+                                                  Container(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                left: 20,
+                                                              ),
+                                                          child: Text(
+                                                            order['receiverName'],
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
                                                             ),
-                                                      ),
-                                                    );
-                                                  },
-                                                  style: FilledButton.styleFrom(
-                                                    backgroundColor:
-                                                        Color.fromARGB(
-                                                          255,
-                                                          255,
-                                                          187,
-                                                          2,
+                                                          ),
                                                         ),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            10,
-                                                          ), // มุมโค้ง
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                left: 20,
+                                                              ),
+                                                          child: Text(
+                                                            order['receiverPhone'],
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
-                                                  child: Text(
-                                                    "รับงาน",
-                                                    style: TextStyle(
-                                                      color: Colors.black,
-                                                    ),
-                                                  ),
-                                                ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
+                                            ),
+
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                top: 12,
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  FilledButton(
+                                                    onPressed: () {
+                                                      log("ปุ่มพิกัดถูกกดแล้ว");
+                                                      print(order);
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (context) => AlertDialog(
+                                                          content: Container(
+                                                            width: 300,
+                                                            height: 500,
+                                                            child: Column(
+                                                              children: [
+                                                                Container(
+                                                                  width: 150,
+                                                                  height: 100,
+                                                                  decoration: BoxDecoration(
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                          12,
+                                                                        ), // มุมมน
+                                                                    border: Border.all(
+                                                                      color: Colors
+                                                                          .yellow, // สีขอบ
+                                                                      width:
+                                                                          2, // ความหนาขอบ
+                                                                    ),
+                                                                    image: DecorationImage(
+                                                                      image: NetworkImage(
+                                                                        order['order_image'],
+                                                                      ),
+                                                                      fit: BoxFit
+                                                                          .cover,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                Expanded(
+                                                                  child: FlutterMap(
+                                                                    mapController:
+                                                                        mapController,
+                                                                    options: MapOptions(
+                                                                      initialCenter: const LatLng(
+                                                                        16.246373,
+                                                                        103.251827,
+                                                                      ), // กรุงเทพฯ
+                                                                      initialZoom:
+                                                                          16,
+                                                                    ),
+                                                                    children: [
+                                                                      TileLayer(
+                                                                        urlTemplate:
+                                                                            'https://tile.thunderforest.com/atlas/{z}/{x}/{y}.png?apikey=1ef19f91909b4ac1ad3dfb1dc523a2c6',
+                                                                        userAgentPackageName:
+                                                                            'com.example.delivery',
+                                                                      ),
+                                                                      MarkerLayer(
+                                                                        markers: [
+                                                                          Marker(
+                                                                            point: LatLng(
+                                                                              order['receiverLat'],
+                                                                              order['receiverLng'],
+                                                                            ),
+                                                                            width:
+                                                                                40,
+                                                                            height:
+                                                                                40,
+                                                                            child: const Icon(
+                                                                              Icons.location_on,
+                                                                              color: Colors.red,
+                                                                              size: 40,
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                    style: FilledButton.styleFrom(
+                                                      backgroundColor:
+                                                          Color.fromARGB(
+                                                            255,
+                                                            255,
+                                                            187,
+                                                            2,
+                                                          ),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              10,
+                                                            ), // มุมโค้ง
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      "พิกัด",
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 20),
+                                                  FilledButton(
+                                                    onPressed: () async {
+                                                      await acceptOrder(
+                                                        order['order_id'],
+                                                        widget.rid,
+                                                      );
+                                                      setState(() {
+                                                        isLoading = true;
+                                                      });
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              Ridersendorder(
+                                                                order_id:
+                                                                    order['order_id'],
+                                                              ),
+                                                        ),
+                                                      );
+                                                    },
+                                                    style: FilledButton.styleFrom(
+                                                      backgroundColor:
+                                                          Color.fromARGB(
+                                                            255,
+                                                            255,
+                                                            187,
+                                                            2,
+                                                          ),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              10,
+                                                            ), // มุมโค้ง
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      "รับงาน",
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         );
                       },
                     ),
@@ -422,6 +611,7 @@ class _HomepageriderState extends State<Homepagerider> {
           var receiverId = data['receiver_id'];
           var senderAddress = data['sender_address_id'];
           var receiverAddress = data['receiver_address_id'];
+          var orderImage = data['order_image'];
 
           var userQuerySender = await userDoc.doc(senderId).get();
           var userQueryReceiver = await userDoc.doc(receiverId).get();
@@ -445,11 +635,17 @@ class _HomepageriderState extends State<Homepagerider> {
 
           var fullData = {
             "order_id": doc.id,
+            "order_image": orderImage,
             "senderName": senderData!['name'],
             "senderPhone": senderData!['phone'],
             "senderImage": senderData!['profile_image'],
+            "receiverName": receiverData!['name'],
+            "receiverPhone": receiverData!['phone'],
+            "receiverImage": receiverData!['profile_image'],
             "sender_address": senderAddressString,
             "receiver_address": receiverAddressString,
+            "receiverLat": receiverAddressData!['latitude'],
+            "receiverLng": receiverAddressData!['longitude'],
           };
 
           tempList.add(fullData);
@@ -571,4 +767,59 @@ class _HomepageriderState extends State<Homepagerider> {
 
     return await Geolocator.getCurrentPosition();
   }
+
+  // void gpsOrder() {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       content: Container(
+  //         width: 300,
+  //         height: 500,
+  //         child: Column(
+  //           children: [
+  //             Image.asset(
+  //               'assets/images/box.png',
+  //               width: 100,
+  //               height: 100,
+  //               fit: BoxFit.cover,
+  //             ),
+  //             Expanded(
+  //               child: FlutterMap(
+  //                 mapController: mapController,
+  //                 options: MapOptions(
+  //                   initialCenter: const LatLng(
+  //                     16.246373,
+  //                     103.251827,
+  //                   ), // กรุงเทพฯ
+  //                   initialZoom: 16,
+  //                 ),
+  //                 children: [
+  //                   TileLayer(
+  //                     urlTemplate:
+  //                         'https://tile.thunderforest.com/atlas/{z}/{x}/{y}.png?apikey=1ef19f91909b4ac1ad3dfb1dc523a2c6',
+  //                     userAgentPackageName: 'com.example.delivery',
+  //                   ),
+  //                   MarkerLayer(
+  //                     markers: [
+  //                       Marker(
+  //                         point: LatLng(),
+  //                         width: 40,
+  //                         height: 40,
+  //                         child: const Icon(
+  //                           Icons.location_on,
+  //                           color: Colors.red,
+  //                           size: 40,
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 }

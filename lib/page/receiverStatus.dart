@@ -41,7 +41,7 @@ class _ReceiverstatusState extends State<Receiverstatus> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.oid)),
+      appBar: AppBar(title: Text("พิกัด")),
       body: Container(
         child: Column(
           children: [
@@ -148,25 +148,45 @@ class _ReceiverstatusState extends State<Receiverstatus> {
                           steps: [
                             EasyStep(
                               icon: Icon(Icons.inventory_2_outlined, size: 50),
-                              title: 'รอไรเดอร์',
+                              customTitle: Text(
+                                'รอไรเดอร์',
+                                style: TextStyle(
+                                  fontSize: 9, // ✅ ปรับขนาดฟอนต์ได้เอง
+                                ),
+                              ),
                             ),
                             EasyStep(
                               icon: Icon(
                                 Icons.delivery_dining_outlined,
                                 size: 50,
                               ),
-                              title: 'ไรเดอร์รับงาน',
+                              customTitle: Text(
+                                'ไรเดอร์รับงาน',
+                                style: TextStyle(
+                                  fontSize: 9, // ✅ ปรับขนาดฟอนต์ได้เอง
+                                ),
+                              ),
                             ),
                             EasyStep(
                               icon: Icon(
                                 Icons.local_shipping_outlined,
                                 size: 50,
                               ),
-                              title: 'กำลังเดินทาง',
+                              customTitle: Text(
+                                'กำลังเดินทาง',
+                                style: TextStyle(
+                                  fontSize: 9, // ✅ ปรับขนาดฟอนต์ได้เอง
+                                ),
+                              ),
                             ),
                             EasyStep(
                               icon: Icon(Icons.home_outlined, size: 50),
-                              title: 'ส่งสินค้าสำเร็จ',
+                              customTitle: Text(
+                                'ส่งสินค้าสำเร็จ',
+                                style: TextStyle(
+                                  fontSize: 9, // ✅ ปรับขนาดฟอนต์ได้เอง
+                                ),
+                              ),
                             ),
                           ],
                         ),

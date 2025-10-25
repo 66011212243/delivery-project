@@ -46,6 +46,8 @@ class _RegisterusersState extends State<Registerusers> {
   String? selectedAddress;
   String address = "";
 
+  bool isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,341 +57,372 @@ class _RegisterusersState extends State<Registerusers> {
         toolbarHeight: 90,
         centerTitle: true,
       ),
-      body: DefaultTabController(
-        length: 2,
-        child: Column(
-          children: [
-            // แท็บด้านบน
-            Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: TabBar(
-                indicatorColor: Color.fromARGB(255, 255, 187, 2),
-                indicatorSize: TabBarIndicatorSize.tab,
-
-                tabs: [
-                  Tab(
-                    child: Text(
-                      "ผู้ใช้ทั่วไป",
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
-                  Tab(
-                    child: Text(
-                      "ไรเดอร์",
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            Expanded(
-              child: TabBarView(
+      body: isLoading
+          ? Center(child: CircularProgressIndicator()) // Loader ขณะโหลด
+          : DefaultTabController(
+              length: 2,
+              child: Column(
                 children: [
-                  SingleChildScrollView(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 50, bottom: 20),
-                          child: Container(
-                            width: 150,
-                            height: 150,
-                            decoration: BoxDecoration(
-                              color: Color.fromARGB(255, 241, 241, 241),
-                              shape: BoxShape.circle,
-                            ),
-                            child: ClipOval(
-                              // ตัดให้เป็นวงกลม
-                              child: (image != null)
-                                  ? Image.file(
-                                      File(image!.path),
-                                      width: 150,
-                                      height: 150,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Center(
-                                      child: GestureDetector(
-                                        onTap: addImg, // ฟังก์ชันเลือกภาพ
-                                        child: Image.asset(
-                                          'assets/images/9055425_bxs_image_add_icon.png',
-                                          width: 30,
-                                          height: 30,
-                                        ),
-                                      ),
-                                    ),
-                            ),
+                  // แท็บด้านบน
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: TabBar(
+                      indicatorColor: Color.fromARGB(255, 255, 187, 2),
+                      indicatorSize: TabBarIndicatorSize.tab,
+
+                      tabs: [
+                        Tab(
+                          child: Text(
+                            "ผู้ใช้ทั่วไป",
+                            style: TextStyle(color: Colors.black),
                           ),
                         ),
-
-                        Container(
-                          width: double.infinity, // กำหนดความกว้างเต็มหน้าจอ
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              //name
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  "ชื่อ - สกุล",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 20),
-                                child: TextField(
-                                  controller: nameCtl,
-                                  decoration: InputDecoration(
-                                    filled:
-                                        true, // ต้องตั้งเป็น true ถึงจะมีพื้นหลัง
-                                    fillColor: Color.fromARGB(
-                                      255,
-                                      244,
-                                      242,
-                                      242,
-                                    ),
-                                    hintText: 'ชื่อ - สกุล',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide:
-                                          BorderSide.none, // ถ้าไม่อยากให้ขอบ
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              //phone
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  "เบอร์โทรศัพท์",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 20),
-                                child: TextField(
-                                  controller: phoneCtl,
-                                  decoration: InputDecoration(
-                                    filled:
-                                        true, // ต้องตั้งเป็น true ถึงจะมีพื้นหลัง
-                                    fillColor: Color.fromARGB(
-                                      255,
-                                      244,
-                                      242,
-                                      242,
-                                    ),
-                                    hintText: 'เบอร์โทรศัพท์',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide:
-                                          BorderSide.none, // ถ้าไม่อยากให้ขอบ
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              //password
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  "รหัสผ่าน",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 20),
-                                child: TextField(
-                                  controller: passwordCtl,
-                                  obscureText: true,
-                                  decoration: InputDecoration(
-                                    filled:
-                                        true, // ต้องตั้งเป็น true ถึงจะมีพื้นหลัง
-                                    fillColor: Color.fromARGB(
-                                      255,
-                                      244,
-                                      242,
-                                      242,
-                                    ),
-                                    hintText: 'รหัสผ่าน',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide:
-                                          BorderSide.none, // ถ้าไม่อยากให้ขอบ
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  "ที่อยู่",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-
-                              Column(
-                                children: [
-                                  Container(
-                                    width: 360,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                      color: Color.fromARGB(255, 227, 227, 227),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-
-                                    child: Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 20,
-                                        ),
-                                        child: SingleChildScrollView(
-                                          scrollDirection:
-                                              Axis.horizontal, // เลื่อนแนวนอน
-                                          child: Text(
-                                            selectedAddress ??
-                                                "กรุณาเลือกที่อยู่",
-                                            style: TextStyle(fontSize: 18),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: SizedBox(
-                                      width: 360,
-                                      height: 350,
-                                      child: FlutterMap(
-                                        mapController: mapController,
-                                        options: MapOptions(
-                                          initialCenter: LatLng(
-                                            16.246373,
-                                            103.251827,
-                                          ),
-                                          initialZoom: 15.2,
-                                          onTap: (tapPosition, point) async {
-                                            setState(() {
-                                              selectedLatLng =
-                                                  point; // เก็บพิกัดที่กดเลือก
-                                            });
-                                            List<Placemark> placemarks =
-                                                await placemarkFromCoordinates(
-                                                  point.latitude,
-                                                  point.longitude,
-                                                );
-
-                                            if (placemarks.isNotEmpty) {
-                                              final place = placemarks.first;
-
-                                              // ประกอบ address เอง
-                                              address =
-                                                  "${place.street ?? ''} "
-                                                  "${place.subLocality ?? ''} "
-                                                  "${place.locality ?? ''} "
-                                                  "${place.subAdministrativeArea ?? ''} "
-                                                  "${place.administrativeArea ?? ''} "
-                                                  "${place.postalCode ?? ''} "
-                                                  "${place.country ?? ''}";
-                                            }
-                                            log("${address}");
-                                            log("${selectedLatLng}");
-
-                                            // ถ้าต้องการโชว์ในหน้า UI
-                                            setState(() {
-                                              selectedAddress = address;
-                                            });
-                                          },
-                                        ),
-                                        children: [
-                                          TileLayer(
-                                            urlTemplate:
-                                                'https://tile.thunderforest.com/atlas/{z}/{x}/{y}.png?apikey=1ef19f91909b4ac1ad3dfb1dc523a2c6',
-                                            userAgentPackageName:
-                                                'com.example.delivery',
-                                          ),
-                                          if (selectedLatLng !=
-                                              null) // วางหมุดเฉพาะเมื่อมีค่าพิกัด
-                                            MarkerLayer(
-                                              markers: [
-                                                Marker(
-                                                  point: selectedLatLng!,
-                                                  width: 40,
-                                                  height: 40,
-                                                  child: Icon(
-                                                    Icons.location_on,
-                                                    color: Colors.red,
-                                                    size: 40,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 10,
-                                  bottom: 50,
-                                ),
-                                child: Center(
-                                  child: FilledButton(
-                                    onPressed: () => addData(),
-                                    style: FilledButton.styleFrom(
-                                      backgroundColor: Color.fromARGB(
-                                        255,
-                                        255,
-                                        187,
-                                        2,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          10,
-                                        ), // มุมโค้ง
-                                      ),
-                                    ),
-                                    child: Text(
-                                      "ลงทะเบียน",
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                        Tab(
+                          child: Text(
+                            "ไรเดอร์",
+                            style: TextStyle(color: Colors.black),
                           ),
                         ),
                       ],
                     ),
                   ),
 
-                  //Tab2
-                  Registerriders(),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        SingleChildScrollView(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 50,
+                                  bottom: 20,
+                                ),
+                                child: Container(
+                                  width: 150,
+                                  height: 150,
+                                  decoration: BoxDecoration(
+                                    color: Color.fromARGB(255, 241, 241, 241),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: ClipOval(
+                                    // ตัดให้เป็นวงกลม
+                                    child: (image != null)
+                                        ? Image.file(
+                                            File(image!.path),
+                                            width: 150,
+                                            height: 150,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Center(
+                                            child: GestureDetector(
+                                              onTap: addImg, // ฟังก์ชันเลือกภาพ
+                                              child: Image.asset(
+                                                'assets/images/9055425_bxs_image_add_icon.png',
+                                                width: 30,
+                                                height: 30,
+                                              ),
+                                            ),
+                                          ),
+                                  ),
+                                ),
+                              ),
+
+                              Container(
+                                width:
+                                    double.infinity, // กำหนดความกว้างเต็มหน้าจอ
+                                padding: EdgeInsets.symmetric(horizontal: 20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    //name
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        "ชื่อ - สกุล",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 20,
+                                      ),
+                                      child: TextField(
+                                        controller: nameCtl,
+                                        decoration: InputDecoration(
+                                          filled:
+                                              true, // ต้องตั้งเป็น true ถึงจะมีพื้นหลัง
+                                          fillColor: Color.fromARGB(
+                                            255,
+                                            244,
+                                            242,
+                                            242,
+                                          ),
+                                          hintText: 'ชื่อ - สกุล',
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            borderSide: BorderSide
+                                                .none, // ถ้าไม่อยากให้ขอบ
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    //phone
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        "เบอร์โทรศัพท์",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 20,
+                                      ),
+                                      child: TextField(
+                                        controller: phoneCtl,
+                                        decoration: InputDecoration(
+                                          filled:
+                                              true, // ต้องตั้งเป็น true ถึงจะมีพื้นหลัง
+                                          fillColor: Color.fromARGB(
+                                            255,
+                                            244,
+                                            242,
+                                            242,
+                                          ),
+                                          hintText: 'เบอร์โทรศัพท์',
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            borderSide: BorderSide
+                                                .none, // ถ้าไม่อยากให้ขอบ
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    //password
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        "รหัสผ่าน",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 20,
+                                      ),
+                                      child: TextField(
+                                        controller: passwordCtl,
+                                        obscureText: true,
+                                        decoration: InputDecoration(
+                                          filled:
+                                              true, // ต้องตั้งเป็น true ถึงจะมีพื้นหลัง
+                                          fillColor: Color.fromARGB(
+                                            255,
+                                            244,
+                                            242,
+                                            242,
+                                          ),
+                                          hintText: 'รหัสผ่าน',
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            borderSide: BorderSide
+                                                .none, // ถ้าไม่อยากให้ขอบ
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        "ที่อยู่",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+
+                                    Column(
+                                      children: [
+                                        Container(
+                                          width: 360,
+                                          height: 50,
+                                          decoration: BoxDecoration(
+                                            color: Color.fromARGB(
+                                              255,
+                                              227,
+                                              227,
+                                              227,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+
+                                          child: Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                left: 20,
+                                              ),
+                                              child: SingleChildScrollView(
+                                                scrollDirection: Axis
+                                                    .horizontal, // เลื่อนแนวนอน
+                                                child: Text(
+                                                  selectedAddress ??
+                                                      "กรุณาเลือกที่อยู่",
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: SizedBox(
+                                            width: 360,
+                                            height: 350,
+                                            child: FlutterMap(
+                                              mapController: mapController,
+                                              options: MapOptions(
+                                                initialCenter: LatLng(
+                                                  16.246373,
+                                                  103.251827,
+                                                ),
+                                                initialZoom: 15.2,
+                                                onTap: (tapPosition, point) async {
+                                                  setState(() {
+                                                    selectedLatLng =
+                                                        point; // เก็บพิกัดที่กดเลือก
+                                                  });
+                                                  List<Placemark> placemarks =
+                                                      await placemarkFromCoordinates(
+                                                        point.latitude,
+                                                        point.longitude,
+                                                      );
+
+                                                  if (placemarks.isNotEmpty) {
+                                                    final place =
+                                                        placemarks.first;
+
+                                                    // ประกอบ address เอง
+                                                    address =
+                                                        "${place.street ?? ''} "
+                                                        "${place.subLocality ?? ''} "
+                                                        "${place.locality ?? ''} "
+                                                        "${place.subAdministrativeArea ?? ''} "
+                                                        "${place.administrativeArea ?? ''} "
+                                                        "${place.postalCode ?? ''} "
+                                                        "${place.country ?? ''}";
+                                                  }
+                                                  log("${address}");
+                                                  log("${selectedLatLng}");
+
+                                                  // ถ้าต้องการโชว์ในหน้า UI
+                                                  setState(() {
+                                                    selectedAddress = address;
+                                                  });
+                                                },
+                                              ),
+                                              children: [
+                                                TileLayer(
+                                                  urlTemplate:
+                                                      'https://tile.thunderforest.com/atlas/{z}/{x}/{y}.png?apikey=1ef19f91909b4ac1ad3dfb1dc523a2c6',
+                                                  userAgentPackageName:
+                                                      'com.example.delivery',
+                                                ),
+                                                if (selectedLatLng !=
+                                                    null) // วางหมุดเฉพาะเมื่อมีค่าพิกัด
+                                                  MarkerLayer(
+                                                    markers: [
+                                                      Marker(
+                                                        point: selectedLatLng!,
+                                                        width: 40,
+                                                        height: 40,
+                                                        child: Icon(
+                                                          Icons.location_on,
+                                                          color: Colors.red,
+                                                          size: 40,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        top: 10,
+                                        bottom: 50,
+                                      ),
+                                      child: Center(
+                                        child: FilledButton(
+                                          onPressed: () => addData(),
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: Color.fromARGB(
+                                              255,
+                                              255,
+                                              187,
+                                              2,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    10,
+                                                  ), // มุมโค้ง
+                                            ),
+                                          ),
+                                          child: Text(
+                                            "ลงทะเบียน",
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        //Tab2
+                        Registerriders(),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -418,6 +451,9 @@ class _RegisterusersState extends State<Registerusers> {
   }
 
   Future<void> addData() async {
+    setState(() {
+      isLoading = true;
+    });
     try {
       var docRef = db.collection('users').doc();
       var docAddress = db.collection('address').doc();

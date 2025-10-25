@@ -60,7 +60,7 @@ class _RidersendorderState extends State<Ridersendorder> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.order_id)),
+      appBar: AppBar(title: Text("สถานะ")),
       body: Container(
         child: Column(
           children: [
@@ -171,18 +171,33 @@ class _RidersendorderState extends State<Ridersendorder> {
                                 Icons.delivery_dining_outlined,
                                 size: 50,
                               ),
-                              title: 'ไรเดอร์รับงาน',
+                              customTitle: Text(
+                                'ไรเดอร์รับงาน',
+                                style: TextStyle(
+                                  fontSize: 10, // ✅ ปรับขนาดฟอนต์ได้เอง
+                                ),
+                              ),
                             ),
                             EasyStep(
                               icon: Icon(
                                 Icons.local_shipping_outlined,
                                 size: 50,
                               ),
-                              title: 'กำลังเดินทาง',
+                              customTitle: Text(
+                                'กำลังเดินทาง',
+                                style: TextStyle(
+                                  fontSize: 10, // ✅ ปรับขนาดฟอนต์ได้เอง
+                                ),
+                              ),
                             ),
                             EasyStep(
                               icon: Icon(Icons.home_outlined, size: 50),
-                              title: 'ส่งสินค้าสำเร็จ',
+                              customTitle: Text(
+                                'ส่งสินค้าสำเร็จ',
+                                style: TextStyle(
+                                  fontSize: 10, // ✅ ปรับขนาดฟอนต์ได้เอง
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -190,30 +205,6 @@ class _RidersendorderState extends State<Ridersendorder> {
                     ],
                   ),
 
-                  // Container(
-                  //   alignment: Alignment.center,
-                  //   margin: EdgeInsets.only(bottom: 150),
-                  //   child: Column(
-                  //     mainAxisAlignment: MainAxisAlignment.end,
-
-                  //     children: [
-                  //       const SizedBox(height: 10),
-                  //       ElevatedButton.icon(
-                  //         onPressed: getLocation,
-
-                  //         icon: const Icon(Icons.person_outline),
-                  //         label: const Text('ดู'),
-                  //         style: ElevatedButton.styleFrom(
-                  //           backgroundColor: Colors.yellow[700],
-                  //           foregroundColor: Colors.black,
-                  //           shape: RoundedRectangleBorder(
-                  //             borderRadius: BorderRadius.circular(12),
-                  //           ),
-                  //         ),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
                   Container(
                     alignment: Alignment.center,
                     margin: EdgeInsets.only(bottom: 40),
@@ -263,147 +254,128 @@ class _RidersendorderState extends State<Ridersendorder> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            SizedBox(height: 20),
+            Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 20),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 10),
-                    Text(
-                      "ผู้ส่ง",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color.fromARGB(255, 89, 89, 89),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        ClipOval(
-                          child: orderData?['senderImage'] != null
-                              ? Image.network(
-                                  orderData!['senderImage'],
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                )
-                              : Container(
-                                  width: 50,
-                                  height: 50,
-                                  color: Colors.grey, // สีเทา
-                                ),
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(orderData?['senderName']),
-                            Text(orderData?['senderPhone']),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Image.asset(
-                          'assets/images/box.png',
-                          width: 50,
-                          height: 50,
-                        ),
-
-                        const SizedBox(width: 10),
-                        Text(
-                          orderData?['sender_address'],
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 40),
-                  ],
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.only(top: 90),
-                  child: Container(
-                    width: 70,
-                    height: 2,
-                    color: Colors.black, // สีเส้น
+                SizedBox(height: 10),
+                Text(
+                  "ผู้ส่ง",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color.fromARGB(255, 89, 89, 89),
                   ),
                 ),
-
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                const SizedBox(height: 10),
+                Row(
                   children: [
-                    SizedBox(height: 10),
-                    Text(
-                      "ผู้รับ",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color.fromARGB(255, 89, 89, 89),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(orderData?['receiverName']),
-                            Text(orderData?['receiverPhone']),
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        ClipOval(
-                          child: orderData?['receiverImage'] != null
-                              ? Image.network(
-                                  orderData!['receiverImage'],
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                )
-                              : Container(
-                                  width: 50,
-                                  height: 50,
-                                  color: Colors.grey, // สีเทาเป็น placeholder
-                                ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: 100),
-                          child: Text(
-                            orderData?['receiver_address'] ?? "",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                    ClipOval(
+                      child: orderData?['senderImage'] != null
+                          ? Image.network(
+                              orderData!['senderImage'],
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                            )
+                          : Container(
+                              width: 50,
+                              height: 50,
+                              color: Colors.grey, // สีเทา
                             ),
-                            softWrap: true,
-                          ),
-                        ),
-
-                        const SizedBox(width: 15),
-                        Image.asset(
-                          'assets/images/pin_images.png',
-                          width: 25,
-                          height: 25,
-                        ),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(orderData?['senderName']),
+                        Text(orderData?['senderPhone']),
                       ],
                     ),
-                    SizedBox(height: 20),
                   ],
                 ),
+                Row(
+                  children: [
+                    Image.asset('assets/images/box.png', width: 50, height: 50),
+
+                    const SizedBox(width: 10),
+                    Text(
+                      orderData?['sender_address'],
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
               ],
             ),
+
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 10),
+                Text(
+                  "ผู้รับ",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color.fromARGB(255, 89, 89, 89),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    ClipOval(
+                      child: orderData?['receiverImage'] != null
+                          ? Image.network(
+                              orderData!['receiverImage'],
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                            )
+                          : Container(
+                              width: 50,
+                              height: 50,
+                              color: Colors.grey, // สีเทาเป็น placeholder
+                            ),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(orderData?['receiverName']),
+                        Text(orderData?['receiverPhone']),
+                      ],
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Image.asset(
+                      'assets/images/pin_images.png',
+                      width: 25,
+                      height: 25,
+                    ),
+                    const SizedBox(width: 15),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 100),
+                      child: Text(
+                        orderData?['receiver_address'] ?? "",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        softWrap: true,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 30),
+              ],
+            ),
+
             if (orderData!['status'] == 2)
               Column(
                 children: [

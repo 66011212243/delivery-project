@@ -56,7 +56,7 @@ class _SenderstatusState extends State<Senderstatus> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.oid)),
+      appBar: AppBar(title: Text("พิกัด")),
       body: Container(
         child: Column(
           children: [
@@ -163,25 +163,45 @@ class _SenderstatusState extends State<Senderstatus> {
                           steps: [
                             EasyStep(
                               icon: Icon(Icons.inventory_2_outlined, size: 50),
-                              title: 'รอไรเดอร์',
+                              customTitle: Text(
+                                'รอไรเดอร์',
+                                style: TextStyle(
+                                  fontSize: 9, // ✅ ปรับขนาดฟอนต์ได้เอง
+                                ),
+                              ),
                             ),
                             EasyStep(
                               icon: Icon(
                                 Icons.delivery_dining_outlined,
                                 size: 50,
                               ),
-                              title: 'ไรเดอร์รับงาน',
+                              customTitle: Text(
+                                'ไรเดอร์รับงาน',
+                                style: TextStyle(
+                                  fontSize: 9, // ✅ ปรับขนาดฟอนต์ได้เอง
+                                ),
+                              ),
                             ),
                             EasyStep(
                               icon: Icon(
                                 Icons.local_shipping_outlined,
                                 size: 50,
                               ),
-                              title: 'กำลังเดินทาง',
+                              customTitle: Text(
+                                'กำลังเดินทาง',
+                                style: TextStyle(
+                                  fontSize: 9, // ✅ ปรับขนาดฟอนต์ได้เอง
+                                ),
+                              ),
                             ),
                             EasyStep(
                               icon: Icon(Icons.home_outlined, size: 50),
-                              title: 'ส่งสินค้าสำเร็จ',
+                              customTitle: Text(
+                                'ส่งสินค้าสำเร็จ',
+                                style: TextStyle(
+                                  fontSize: 9, // ✅ ปรับขนาดฟอนต์ได้เอง
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -366,6 +386,23 @@ class _SenderstatusState extends State<Senderstatus> {
                       ),
                     ),
 
+                  if (orderData!['status'] == 3)
+                    Container(
+                      width: 300,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(255, 241, 241, 241),
+                      ),
+                      child: Container(
+                        child: (orderData!['imgStatus3'] != null)
+                            ? Image.network(
+                                orderData!['imgStatus3'],
+                                fit: BoxFit.cover,
+                              )
+                            : Center(child: GestureDetector(onTap: () {})),
+                      ),
+                    ),
+
                   if (orderData!['status'] == 4)
                     Container(
                       width: 300,
@@ -403,6 +440,7 @@ class _SenderstatusState extends State<Senderstatus> {
     listener = docOrder.snapshots().listen((event) async {
       var data = event.data();
       var status = data?['status'];
+      var imgStatus3 = data?['image_status3'];
       var imgStatus4 = data?['image_status4'];
       var receiverAddress = data?['receiver_address_id'];
       var senderAddress = data?['sender_address_id'];
@@ -421,6 +459,7 @@ class _SenderstatusState extends State<Senderstatus> {
           "longitudeReceiver": receiverAddressData!['longitude'],
           "latitudeSender": senderAddressData!['latitude'],
           "longitudeSender": senderAddressData!['longitude'],
+          if (imgStatus3 != null) "imgStatus3": imgStatus3,
           if (imgStatus4 != null) "imgStatus4": imgStatus4,
         };
         activeStep = mapStatusToStep(orderData!['status']);
